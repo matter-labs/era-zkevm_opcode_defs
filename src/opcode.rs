@@ -37,6 +37,9 @@ impl<const N: usize, E: VmEncodingMode<N>> DecodedOpcode<N, E> {
     pub fn mask_into_panic(&mut self) {
         // we only mask first 8 bytes of the opcode, and do not touch regs or imms
         self.variant.opcode = Opcode::Ret(RetOpcode::Panic);
+        // it's important that we set condition to "always"
+        self.condition = Condition::Always;
+        // the rest is just trivial downgrade
         self.variant.src0_operand_type = Operand::RegOnly;
         self.variant.dst0_operand_type = Operand::RegOnly;
         // ret opcode doesn't use flags, so it's always empty
@@ -49,6 +52,9 @@ impl<const N: usize, E: VmEncodingMode<N>> DecodedOpcode<N, E> {
 
     pub fn mask_into_nop(&mut self) {
         self.variant.opcode = Opcode::Nop(NopOpcode);
+        // it's important that we set condition to "always"
+        self.condition = Condition::Always;
+        // the rest is just trivial downgrade
         self.variant.src0_operand_type = Operand::Full(ImmMemHandlerFlags::UseRegOnly);
         self.variant.dst0_operand_type = Operand::Full(ImmMemHandlerFlags::UseRegOnly);
         self.variant.flags = [false; NUM_NON_EXCLUSIVE_FLAGS];
