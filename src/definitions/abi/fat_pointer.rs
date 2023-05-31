@@ -73,6 +73,13 @@ impl FatPointer {
         in_bounds
     }
 
+    /// We allow to pass empty (offset == length) slices in Far call / Ret
+    pub const fn validate_as_slice(&self) -> bool {
+        let is_valid_slice = self.offset <= self.length;
+
+        is_valid_slice
+    }
+
     /// special case when we supply empty slice, that is formally NOT addressable
     pub const fn is_trivial(&self) -> bool {
         self.length == 0 && self.offset == 0

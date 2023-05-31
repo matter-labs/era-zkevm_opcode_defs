@@ -17,15 +17,13 @@ pub const CYCLES_PER_STORAGE_APPLICATION: u32 = 118;
 pub const CYCLES_PER_KECCAK256_CIRCUIT: u32 = 2050;
 pub const CYCLES_PER_SHA256_CIRCUIT: u32 = 11500;
 pub const CYCLES_PER_ECRECOVER_CIRCUIT: u32 = 72;
-
-/// These circuits while not currently multi-instance, will become ones
-pub const LIMIT_FOR_LOG_DEMUXER: u32 = 101500;
-pub const LIMIT_FOR_STORAGE_SORTER: u32 = 79000;
-pub const LIMIT_FOR_EVENTS_OR_L1_MESSAGES_SORTER: u32 = 88000;
+pub const CYCLES_FOR_CODE_DECOMMITTER_SORTER: u32 = 192500;
+pub const CYCLES_FOR_LOG_DEMUXER: u32 = 101500;
+pub const CYCLES_FOR_STORAGE_SORTER: u32 = 79000;
+pub const CYCLES_FOR_EVENTS_OR_L1_MESSAGES_SORTER: u32 = 88000;
 
 /// This kinds of circuit will always remain single-instance
 pub const LIMIT_FOR_L1_MESSAGES_MERKLIZER: u32 = 512;
-pub const LIMIT_FOR_CODE_DECOMMITTER_SORTER: u32 = 192500;
 pub const LIMIT_FOR_INITIAL_WRITES_PUBDATA_HASHER: u32 = 4600;
 pub const LIMIT_FOR_REPEATED_WRITES_PUBDATA_HASHER: u32 = 7400;
 
@@ -98,19 +96,19 @@ fn main() {
         ),
         ergs_constant(
             "CODE_DECOMMITTER_SORTER_COST_IN_ERGS",
-            ceil_div(ERGS_PER_CIRCUIT, LIMIT_FOR_CODE_DECOMMITTER_SORTER),
+            ceil_div(ERGS_PER_CIRCUIT, CYCLES_FOR_CODE_DECOMMITTER_SORTER),
         ),
         ergs_constant(
             "LOG_DEMUXER_COST_IN_ERGS",
-            ceil_div(ERGS_PER_CIRCUIT, LIMIT_FOR_LOG_DEMUXER),
+            ceil_div(ERGS_PER_CIRCUIT, CYCLES_FOR_LOG_DEMUXER),
         ),
         ergs_constant(
             "STORAGE_SORTER_COST_IN_ERGS",
-            ceil_div(ERGS_PER_CIRCUIT, LIMIT_FOR_STORAGE_SORTER),
+            ceil_div(ERGS_PER_CIRCUIT, CYCLES_FOR_STORAGE_SORTER),
         ),
         ergs_constant(
             "EVENTS_OR_L1_MESSAGES_SORTER_COST_IN_ERGS",
-            ceil_div(ERGS_PER_CIRCUIT, LIMIT_FOR_EVENTS_OR_L1_MESSAGES_SORTER),
+            ceil_div(ERGS_PER_CIRCUIT, CYCLES_FOR_EVENTS_OR_L1_MESSAGES_SORTER),
         ),
         ergs_constant(
             "INITIAL_WRITES_PUBDATA_HASHER_COST_IN_ERGS",
@@ -120,14 +118,14 @@ fn main() {
             "REPEATED_WRITES_PUBDATA_HASHER_COST_IN_ERGS",
             ceil_div(ERGS_PER_CIRCUIT, LIMIT_FOR_REPEATED_WRITES_PUBDATA_HASHER),
         ),
+        ergs_constant(
+            "CODE_DECOMMITMENT_SORTER_COST_IN_ERGS",
+            ceil_div(ERGS_PER_CIRCUIT, CYCLES_FOR_CODE_DECOMMITTER_SORTER)
+        ),
         comment("The following circuits are single-instance and so the provided prices are just minimal prices to preserve DDoS safety"),
         ergs_constant(
             "L1_MESSAGE_MIN_COST_IN_ERGS",
             ceil_div(MAX_TX_ERGS_LIMIT, LIMIT_FOR_L1_MESSAGES_MERKLIZER),
-        ),
-        ergs_constant(
-            "CODE_DECOMMITMENT_SORTER_MIN_COST_IN_ERGS",
-            ceil_div(MAX_TX_ERGS_LIMIT, LIMIT_FOR_CODE_DECOMMITTER_SORTER)
         ),
         ergs_constant(
             "INITIAL_WRITES_PUBDATA_HASHER_MIN_COST_IN_ERGS",
@@ -139,7 +137,7 @@ fn main() {
         ),
         comment("Equals to max(INITIAL_WRITES_PUBDATA_HASHER_MIN_COST_IN_ERGS, REPEATED_WRITES_PUBDATA_HASHER_MIN_COST_IN_ERGS)"),
         ergs_constant(
-            "STORAGE_WRITE_MIN_COST_IN_ERGS",
+            "STORAGE_WRITE_HASHER_MIN_COST_IN_ERGS",
             std::cmp::max(min_price_for_initial_pubdata_write, min_price_for_repeated_pubdata_write)
         ),
         comment("The following constants should not be used in the VM directly, but only in Solidity wrappers"),
