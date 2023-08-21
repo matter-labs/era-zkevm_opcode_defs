@@ -1,4 +1,4 @@
-use crate::{CALL_LIKE_ERGS_COST, circuit_prices::STORAGE_WRITE_HASHER_MIN_COST_IN_ERGS};
+use crate::CALL_LIKE_ERGS_COST;
 use ethereum_types::Address;
 
 pub const MAX_TX_ERGS_LIMIT: u32 = 80_000_000;
@@ -66,40 +66,6 @@ pub const ADDRESS_SYSTEM_CONTEXT: u16 = 0x800B;
 pub const ADDRESS_BOOTLOADER_UTILITIES: u16 = 0x800C;
 pub const ADDRESS_EVENT_WRITER: u16 = 0x800D;
 pub const ADDRESS_KECCAK256: u16 = 0x8010;
-
-pub const BOOTLOADER_MAX_MEMORY: u32 = u32::MAX;
-pub const NEW_FRAME_MEMORY_STIPEND: u32 = 1u32 << 10; // 1 KB for new frames is "free"
-
-pub const MSG_VALUE_SIMULATOR_PUBDATA_BYTES_TO_PREPAY: u32 = 32 + 32 + 32 + 32;
-
-/// 128k * 4 / 32 -- the maximal realistic smart contract size. NOTE this constant should be updated once a new 
-/// packing method is introduced or more than 128k of data is allowed to be sent on L1.
-pub const DECOMMITMENT_MSG_VALUE_SIMULATOR_OVERHEAD: u32 = 64000;
-pub const MSG_VALUE_SIMULATOR_ADDITIVE_COST: u32 = 11500 + DECOMMITMENT_MSG_VALUE_SIMULATOR_OVERHEAD;
-
-/// The minimum amount of ergs that should be spent by the user while using the MsgValueSimulator (even if
-/// the user spends less funds, only the parent frame will receivet the refund)
-pub const MSG_VALUE_SIMULATOR_MIN_USED_ERGS: u32 = 8000 + DECOMMITMENT_MSG_VALUE_SIMULATOR_OVERHEAD;
-
-// std::cmp::max is not yet stabilized as const fn yet
-const fn max(a: u32, b: u32) -> u32 {
-    if a > b {
-        a
-    } else {
-        b
-    }
-}
-
-/// The minimum price in ergs that a storage write should cost in order to protect Ethereum's `.transfer / .send` function against reentrancy.
-/// The first part of the expression is the stipend given by the MsgValueSimulator to the callee frame. The second part of the expression
-/// is the 2300 constant used for 0-value `transfer/send` calls + 1 to make sure that within the call it is not possible to store anything.
-pub const MIN_STORAGE_WRITE_PRICE_FOR_REENTRANCY_PROTECTION: u32 = max(MSG_VALUE_SIMULATOR_ADDITIVE_COST - MSG_VALUE_SIMULATOR_MIN_USED_ERGS + 1, 2300 + 1);
-
-/// The minimal price in ergs the storage could cost to protect against reentrancy + take into account the usage of the single instance circuits.
-pub const MIN_STORAGE_WRITE_COST: u32 = max(
-    MIN_STORAGE_WRITE_PRICE_FOR_REENTRANCY_PROTECTION,
-    STORAGE_WRITE_HASHER_MIN_COST_IN_ERGS
-);
 
 lazy_static! {
     pub static ref BOOTLOADER_FORMAL_ADDRESS: Address =

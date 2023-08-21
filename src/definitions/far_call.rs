@@ -1,6 +1,6 @@
 use crate::circuit_prices::{
-    RAM_PERMUTATION_COST_IN_ERGS,
-    STORAGE_SORTER_COST_IN_ERGS, VM_CYCLE_COST_IN_ERGS, CODE_DECOMMITMENT_SORTER_COST_IN_ERGS,
+    CODE_DECOMMITMENT_SORTER_MIN_COST_IN_ERGS, RAM_PERMUTATION_COST_IN_ERGS,
+    STORAGE_SORTER_COST_IN_ERGS, VM_CYCLE_COST_IN_ERGS,
 };
 
 use super::*;
@@ -54,12 +54,13 @@ impl OpcodeVariantProps for FarCallOpcode {
     }
 
     fn ergs_price(&self) -> u32 {
-        2 * VM_CYCLE_COST_IN_ERGS
+        let intrinsic = 2 * VM_CYCLE_COST_IN_ERGS
             + RAM_PERMUTATION_COST_IN_ERGS
             + STORAGE_READ_IO_PRICE
             + CALL_LIKE_ERGS_COST
-            + STORAGE_SORTER_COST_IN_ERGS
-            + CODE_DECOMMITMENT_SORTER_COST_IN_ERGS
+            + STORAGE_SORTER_COST_IN_ERGS;
+
+        std::cmp::max(intrinsic, CODE_DECOMMITMENT_SORTER_MIN_COST_IN_ERGS)
     }
 }
 

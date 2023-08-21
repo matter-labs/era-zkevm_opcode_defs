@@ -1,8 +1,8 @@
-use crate::{circuit_prices::{
+use crate::circuit_prices::{
     EVENTS_OR_L1_MESSAGES_SORTER_COST_IN_ERGS, L1_MESSAGE_MIN_COST_IN_ERGS,
     LOG_DEMUXER_COST_IN_ERGS, RAM_PERMUTATION_COST_IN_ERGS, STORAGE_SORTER_COST_IN_ERGS,
-    VM_CYCLE_COST_IN_ERGS,
-}, system_params::MIN_STORAGE_WRITE_COST};
+    STORAGE_WRITE_MIN_COST_IN_ERGS, VM_CYCLE_COST_IN_ERGS,
+};
 
 use super::*;
 
@@ -69,7 +69,7 @@ impl OpcodeVariantProps for LogOpcode {
                     + 2 * LOG_DEMUXER_COST_IN_ERGS
                     + 2 * STORAGE_SORTER_COST_IN_ERGS;
 
-                std::cmp::max(intrinsic, MIN_STORAGE_WRITE_COST)
+                std::cmp::max(intrinsic, STORAGE_WRITE_MIN_COST_IN_ERGS)
             }
             // Note, that the `L1_MESSAGE_MIN_COST_IN_ERGS` is only needed for DDoS protection
             LogOpcode::ToL1Message => {
