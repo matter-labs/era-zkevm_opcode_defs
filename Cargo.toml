@@ -15,7 +15,7 @@ path = "src/circuit_pricing_generator/main.rs"
 [dependencies]
 bitflags = "2"
 lazy_static = "1.4"
-ethereum-types = "0.12"
+ethereum-types = "0.14"
 sha2 = "=0.10.6"
 sha3 = "=0.10.6"
 blake2 = "=0.10.6"
