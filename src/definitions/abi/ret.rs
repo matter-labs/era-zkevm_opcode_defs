@@ -2,7 +2,8 @@ use super::*;
 
 pub const RET_FORWARDING_MODE_BYTE_IDX: usize = 28;
 
-const _: () = if RET_FORWARDING_MODE_BYTE_IDX != super::far_call::FAR_CALL_FORWARDING_MODE_BYTE_IDX {
+const _: () = if RET_FORWARDING_MODE_BYTE_IDX != super::far_call::FAR_CALL_FORWARDING_MODE_BYTE_IDX
+{
     panic!()
 } else {
 };
