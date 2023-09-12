@@ -16,12 +16,12 @@ use circuit_prices::CODE_DECOMMITTER_SORTER_COST_IN_ERGS;
 use circuit_prices::RAM_PERMUTATION_COST_IN_ERGS;
 use circuit_prices::VM_CYCLE_COST_IN_ERGS;
 
-pub use ethereum_types;
 pub use bitflags;
+pub use blake2;
+pub use ethereum_types;
+pub use k256;
 pub use sha2;
 pub use sha3;
-pub use k256;
-pub use blake2;
 
 pub use self::definitions::*;
 pub use self::imm_mem_modifiers::*;
