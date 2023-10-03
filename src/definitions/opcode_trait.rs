@@ -83,6 +83,8 @@ pub trait OpcodeProps: 'static + Send + Sync {
             }
         }
     }
+    fn src0_should_be_pointer(&self) -> bool;
+    fn src1_should_be_pointer(&self) -> bool;
 }
 
 pub trait OpcodeVariantProps: Sized + 'static + Send + Sync {
