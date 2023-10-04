@@ -145,11 +145,13 @@ impl OpcodeProps for LogOpcode {
     }
     fn input_operands(&self, _version: ISAVersion) -> Vec<Operand> {
         match self {
-            LogOpcode::StorageWrite | LogOpcode::Event | LogOpcode::ToL1Message => {
+            LogOpcode::StorageWrite
+            | LogOpcode::Event
+            | LogOpcode::ToL1Message
+            | LogOpcode::PrecompileCall => {
                 vec![Operand::RegOnly, Operand::RegOnly]
             }
             LogOpcode::StorageRead => vec![Operand::RegOnly],
-            LogOpcode::PrecompileCall => vec![Operand::RegOnly],
         }
     }
     fn output_operands(&self, _version: ISAVersion) -> Vec<Operand> {
