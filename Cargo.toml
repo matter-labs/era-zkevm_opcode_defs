@@ -19,4 +19,4 @@ ethereum-types = "=0.14.1"
 sha2 = { git = "https://github.com/RustCrypto/hashes.git", tag = "sha2-v0.10.6" }
 sha3 = { git = "https://github.com/RustCrypto/hashes.git", tag = "sha3-v0.10.6" }
 blake2 = { git = "https://github.com/RustCrypto/hashes.git", tag = "blake2-v0.10.6" }
-k256 = { version = "=0.11.6", features = ["arithmetic", "ecdsa"] }
+k256 = { git = "https://github.com/RustCrypto/elliptic-curves.git", tag = "k256/v0.11.6" , features = ["arithmetic", "ecdsa"] }
