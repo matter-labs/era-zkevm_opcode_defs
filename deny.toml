@@ -74,7 +74,6 @@ unknown-git = "deny"
 allow-registry = ["https://github.com/rust-lang/crates.io-index"]
 allow-git = [
   "https://github.com/RustCrypto/hashes.git",
-  "https://github.com/RustCrypto/elliptic-curves.git",
 ]
 
 [sources.allow-org]
