@@ -66,9 +66,9 @@ pub fn bytecode_to_code_hash_for_mode<const N: usize, E: VmEncodingMode<N>>(
 pub fn erase_fat_pointer_metadata(ptr: &mut U256) {
     // Memory page is at 1<<32 - 1<<64, start is at 1<<64 - 1<<96
     // We also need to preserve the top 128 bits of the value
-    let low_bits = ptr.low_u128() & 0xffffffff0000000000000000ffffffffu128;
-    let mut tmp = U256::from(u128::MAX);
-    tmp <<= 128;
-    tmp |= U256::from(low_bits);
-    *ptr &= tmp;
+    let low_bits = 0xffffffff0000000000000000ffffffffu128;
+    let mut mask = U256::from(u128::MAX);
+    mask <<= 128;
+    mask |= U256::from(low_bits);
+    *ptr &= mask;
 }
