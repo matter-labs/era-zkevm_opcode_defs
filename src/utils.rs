@@ -1,4 +1,5 @@
 use crate::decoding::{EncodingModeProduction, VmEncodingMode};
+use ethereum_types::U256;
 
 pub const fn split_as_u4(value: u8) -> (u8, u8) {
     (value & ((1u8 << 4) - 1), value >> 4)
@@ -58,4 +59,13 @@ pub fn bytecode_to_code_hash_for_mode<const N: usize, E: VmEncodingMode<N>>(
     let versioned_hash_bytes = versioned_hash.serialize().ok_or(())?;
 
     Ok(versioned_hash_bytes)
+}
+
+/// Erase start and page number from a fat pointer. To be used in the case of a fat pointer
+/// being passed to an opcode which shouldn't receive one.
+pub fn erase_fat_pointer_metadata(ptr: &mut U256) {
+    // Memory page is at 1<<32 - 1<<64, start is at 1<<64 - 1<<96
+    // We also need to preserve the top 128 bits of the value
+    ptr.0[0] &= 0x00000000_ffffffffu64;
+    ptr.0[1] &= 0xffffffff_00000000u64;
 }
