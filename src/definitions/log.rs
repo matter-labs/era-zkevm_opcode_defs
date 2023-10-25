@@ -171,4 +171,12 @@ impl OpcodeProps for LogOpcode {
             _ => true,
         }
     }
+
+    fn src0_can_be_pointer(&self) -> bool {
+        false
+    }
+
+    fn src1_can_be_pointer(&self) -> bool {
+        false
+    }
 }
