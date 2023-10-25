@@ -73,11 +73,11 @@ impl OpcodeProps for BinopOpcode {
         true
     }
 
-    fn src0_should_be_pointer(&self) -> bool {
+    fn src0_can_be_pointer(&self) -> bool {
         false
     }
 
-    fn src1_should_be_pointer(&self) -> bool {
+    fn src1_can_be_pointer(&self) -> bool {
         false
     }
 }
