@@ -36,8 +36,8 @@ impl ISAVersion {
     }
 }
 
-pub const NUM_ISA_VERSIONS: usize = 2;
-pub const ALL_ISA_VERSIONS: [ISAVersion; NUM_ISA_VERSIONS] = [ISAVersion(0), ISAVersion(1)];
+pub const NUM_ISA_VERSIONS: usize = 3;
+pub const ALL_ISA_VERSIONS: [ISAVersion; NUM_ISA_VERSIONS] = [ISAVersion(0), ISAVersion(1), ISAVersion(2)];
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct OpcodeVariantData {

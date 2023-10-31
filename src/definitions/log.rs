@@ -19,6 +19,7 @@ pub enum LogOpcode {
     ToL1Message,
     Event,
     PrecompileCall,
+    Decommit,
 }
 
 impl OpcodeVariantProps for LogOpcode {
@@ -29,15 +30,31 @@ impl OpcodeVariantProps for LogOpcode {
             LogOpcode::ToL1Message,
             LogOpcode::Event,
             LogOpcode::PrecompileCall,
+            LogOpcode::Decommit,
         ]
     }
 
-    fn max_variant_idx_for_version(_version: ISAVersion) -> usize {
-        LogOpcode::PrecompileCall.variant_index()
+    fn max_variant_idx_for_version(version: ISAVersion) -> usize {
+        match version {
+            ISAVersion(0) | ISAVersion(1) => {
+                LogOpcode::PrecompileCall.variant_index()
+            },
+            ISAVersion(2) => {
+                LogOpcode::Decommit.variant_index()
+            },
+            _ => unreachable!(),
+        }
     }
 
     fn minimal_version(&self) -> ISAVersion {
-        ALL_ISA_VERSIONS[0]
+        match self {
+            LogOpcode::StorageRead |
+            LogOpcode::StorageWrite |
+            LogOpcode::ToL1Message |
+            LogOpcode::Event |
+            LogOpcode::PrecompileCall => ISAVersion(0),
+            LogOpcode::Decommit => ISAVersion(2),
+        }
     }
 
     fn variant_index(&self) -> usize {
@@ -92,6 +109,9 @@ impl OpcodeVariantProps for LogOpcode {
             }
             LogOpcode::PrecompileCall => {
                 VM_CYCLE_COST_IN_ERGS + RAM_PERMUTATION_COST_IN_ERGS + LOG_DEMUXER_COST_IN_ERGS
+            },
+            LogOpcode::Decommit => {
+                VM_CYCLE_COST_IN_ERGS + RAM_PERMUTATION_COST_IN_ERGS + LOG_DEMUXER_COST_IN_ERGS
             }
         }
     }
@@ -136,7 +156,48 @@ impl OpcodeProps for LogOpcode {
                         num_used_immediates: 0,
                     },
                 ]
-            }
+            },
+            ISAVersion(2) => {
+                vec![
+                    // Storage read
+                    OpcodeVariantData {
+                        variant_idx: LogOpcode::StorageRead.variant_index(),
+                        num_non_exclusive_flags: 0,
+                        num_used_immediates: 0,
+                    },
+                    // Storage write
+                    OpcodeVariantData {
+                        variant_idx: LogOpcode::StorageWrite.variant_index(),
+                        num_non_exclusive_flags: 0,
+                        num_used_immediates: 0,
+                    },
+                    // L1 message
+                    OpcodeVariantData {
+                        variant_idx: LogOpcode::ToL1Message.variant_index(),
+                        num_non_exclusive_flags: 1, // can be "initial"
+                        num_used_immediates: 0,
+                    },
+                    // Event
+                    OpcodeVariantData {
+                        variant_idx: LogOpcode::Event.variant_index(),
+                        num_non_exclusive_flags: 1, // can be initial
+                        num_used_immediates: 0,
+                    },
+                    // Precompile calls
+                    OpcodeVariantData {
+                        variant_idx: LogOpcode::PrecompileCall.variant_index(),
+                        num_non_exclusive_flags: 0,
+                        num_used_immediates: 0,
+                    },
+                    // Decommit request
+                    OpcodeVariantData {
+                        variant_idx: LogOpcode::Decommit.variant_index(),
+                        num_non_exclusive_flags: 0,
+                        num_used_immediates: 0,
+                    },
+                ]
+            },
+
             _ => unimplemented!(),
         }
     }

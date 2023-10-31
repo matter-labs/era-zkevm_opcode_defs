@@ -5,6 +5,8 @@ pub const MAX_TX_ERGS_LIMIT: u32 = 80_000_000;
 
 pub const VM_INITIAL_FRAME_ERGS: u32 = u32::MAX;
 
+pub const EVM_SIMULATOR_STIPEND: u32 = 1u32 << 30;
+
 /// How much a single circuit should cost in terms of ergs.
 pub const ERGS_PER_CIRCUIT: u32 = 80000;
 
