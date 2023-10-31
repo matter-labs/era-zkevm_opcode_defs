@@ -2,7 +2,7 @@ use super::*;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct VmMetaParameters {
-    pub ergs_per_pubdata_byte: u32,
+    pub aux_field_0: u32,
     pub heap_size: u32,
     pub aux_heap_size: u32,
     pub this_shard_id: u8,
@@ -13,7 +13,7 @@ pub struct VmMetaParameters {
 impl VmMetaParameters {
     pub const fn to_u256(self) -> U256 {
         let mut result = U256::zero();
-        result.0[0] = self.ergs_per_pubdata_byte as u64;
+        result.0[0] = self.aux_field_0 as u64;
         result.0[1] = (self.heap_size as u64) | ((self.aux_heap_size as u64) << 32);
 
         let tmp = (self.this_shard_id as u64)

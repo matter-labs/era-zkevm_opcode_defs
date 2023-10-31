@@ -119,6 +119,29 @@ impl VersionedHashGeneric<BlobSha256> {
             },
         }
     }
+
+    pub fn normalize_as_decommittable(&self) -> ([u8; 32], u16) {
+        let mut result = [0u8; 32];
+        result[0] = ContractCodeSha256::VERSION_BYTE;
+
+        let (mut len_in_words, rem) = (
+            self.data.preimage_length_in_bytes / 32,
+            self.data.preimage_length_in_bytes % 32,
+        );
+        if rem != 0 {
+            len_in_words += 1;
+        }
+        if len_in_words & 1 != 1 {
+            len_in_words += 1;
+        }
+
+        let len_be = len_in_words.to_be_bytes();
+        result[2] = len_be[0];
+        result[3] = len_be[1];
+        result[4..].copy_from_slice(&self.data.partial_hash);
+
+        (result, len_in_words)
+    }
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]

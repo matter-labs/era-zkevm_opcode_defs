@@ -124,6 +124,8 @@ pub fn total_opcode_description_and_aux_bits_for_version(version: ISAVersion) ->
 
 pub const DEFAULT_ISA_VERSION: ISAVersion = ISAVersion(2);
 
+pub const NUM_SYSTEM_CONTRACTS: usize = 1 << 16;
+
 lazy_static! {
     pub static ref OPCODES_TABLE: [OpcodeVariant; 1 << OPCODES_TABLE_WIDTH] = {
         synthesize_opcode_decoding_tables(OPCODES_TABLE_WIDTH, DEFAULT_ISA_VERSION).try_into().unwrap()
@@ -224,6 +226,14 @@ lazy_static! {
         }
 
         result.try_into().unwrap()
+    };
+
+    pub static ref STIPENDS_AND_EXTRA_COSTS_TABLE: [(u32, u32); NUM_SYSTEM_CONTRACTS] = {
+        let mut default_table = [(0u32, 0u32); NUM_SYSTEM_CONTRACTS];
+        use crate::system_params::MSG_VALUE_SIMULATOR_ADDITIVE_COST;
+        default_table[ADDRESS_MSG_VALUE as usize] = (0u32, MSG_VALUE_SIMULATOR_ADDITIVE_COST);
+
+        default_table
     };
 }
 

@@ -11,7 +11,7 @@ pub enum ContextOpcode {
     Sp,
     GetContextU128,
     SetContextU128,
-    SetErgsPerPubdataByte,
+    AuxMutating0,
     IncrementTxNumber,
 }
 
@@ -26,7 +26,7 @@ impl OpcodeVariantProps for ContextOpcode {
             ContextOpcode::Sp,
             ContextOpcode::GetContextU128,
             ContextOpcode::SetContextU128,
-            ContextOpcode::SetErgsPerPubdataByte,
+            ContextOpcode::AuxMutating0,
             ContextOpcode::IncrementTxNumber,
         ]
     }
@@ -59,8 +59,8 @@ impl OpcodeVariantProps for ContextOpcode {
             i if i == ContextOpcode::SetContextU128.variant_index() => {
                 Some(ContextOpcode::SetContextU128)
             }
-            i if i == ContextOpcode::SetErgsPerPubdataByte.variant_index() => {
-                Some(ContextOpcode::SetErgsPerPubdataByte)
+            i if i == ContextOpcode::AuxMutating0.variant_index() => {
+                Some(ContextOpcode::AuxMutating0)
             }
             i if i == ContextOpcode::IncrementTxNumber.variant_index() => {
                 Some(ContextOpcode::IncrementTxNumber)
@@ -97,7 +97,7 @@ impl OpcodeProps for ContextOpcode {
     }
     fn input_operands(&self, _version: ISAVersion) -> Vec<Operand> {
         match self {
-            ContextOpcode::SetContextU128 | ContextOpcode::SetErgsPerPubdataByte => {
+            ContextOpcode::SetContextU128 | ContextOpcode::AuxMutating0 => {
                 vec![Operand::RegOnly]
             }
             _ => vec![],
@@ -106,7 +106,7 @@ impl OpcodeProps for ContextOpcode {
     fn output_operands(&self, _version: ISAVersion) -> Vec<Operand> {
         match self {
             ContextOpcode::SetContextU128
-            | ContextOpcode::SetErgsPerPubdataByte
+            | ContextOpcode::AuxMutating0
             | ContextOpcode::IncrementTxNumber => vec![],
             _ => vec![Operand::RegOnly],
         }
@@ -114,7 +114,7 @@ impl OpcodeProps for ContextOpcode {
     fn requires_kernel_mode(&self) -> bool {
         match self {
             ContextOpcode::SetContextU128
-            | ContextOpcode::SetErgsPerPubdataByte
+            | ContextOpcode::AuxMutating0
             | ContextOpcode::IncrementTxNumber => true,
             _ => false,
         }
@@ -122,7 +122,7 @@ impl OpcodeProps for ContextOpcode {
     fn can_be_used_in_static_context(&self) -> bool {
         match self {
             ContextOpcode::SetContextU128
-            | ContextOpcode::SetErgsPerPubdataByte
+            | ContextOpcode::AuxMutating0
             | ContextOpcode::IncrementTxNumber => false,
             _ => true,
         }

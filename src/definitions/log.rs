@@ -20,6 +20,8 @@ pub enum LogOpcode {
     Event,
     PrecompileCall,
     Decommit,
+    TransientStorageRead,
+    TransientStorageWrite,
 }
 
 impl OpcodeVariantProps for LogOpcode {
@@ -31,13 +33,15 @@ impl OpcodeVariantProps for LogOpcode {
             LogOpcode::Event,
             LogOpcode::PrecompileCall,
             LogOpcode::Decommit,
+            LogOpcode::TransientStorageRead,
+            LogOpcode::TransientStorageWrite,
         ]
     }
 
     fn max_variant_idx_for_version(version: ISAVersion) -> usize {
         match version {
             ISAVersion(0) | ISAVersion(1) => LogOpcode::PrecompileCall.variant_index(),
-            ISAVersion(2) => LogOpcode::Decommit.variant_index(),
+            ISAVersion(2) => LogOpcode::TransientStorageWrite.variant_index(),
             _ => unreachable!(),
         }
     }
@@ -49,7 +53,9 @@ impl OpcodeVariantProps for LogOpcode {
             | LogOpcode::ToL1Message
             | LogOpcode::Event
             | LogOpcode::PrecompileCall => ISAVersion(0),
-            LogOpcode::Decommit => ISAVersion(2),
+            LogOpcode::Decommit
+            | LogOpcode::TransientStorageRead
+            | LogOpcode::TransientStorageWrite => ISAVersion(2),
         }
     }
 
@@ -78,6 +84,12 @@ impl OpcodeVariantProps for LogOpcode {
                     Some(LogOpcode::PrecompileCall)
                 }
                 i if i == LogOpcode::Decommit.variant_index() => Some(LogOpcode::Decommit),
+                i if i == LogOpcode::TransientStorageRead.variant_index() => {
+                    Some(LogOpcode::TransientStorageRead)
+                }
+                i if i == LogOpcode::TransientStorageWrite.variant_index() => {
+                    Some(LogOpcode::TransientStorageWrite)
+                }
                 _ => None,
             },
             _ => unreachable!(),
@@ -87,34 +99,45 @@ impl OpcodeVariantProps for LogOpcode {
     fn ergs_price(&self) -> u32 {
         match self {
             LogOpcode::StorageRead => {
-                STORAGE_READ_IO_PRICE
-                    + VM_CYCLE_COST_IN_ERGS
+                // NOTE: we do not add IO price here as it's a subject of refunds
+                VM_CYCLE_COST_IN_ERGS
                     + RAM_PERMUTATION_COST_IN_ERGS
                     + LOG_DEMUXER_COST_IN_ERGS
                     + STORAGE_SORTER_COST_IN_ERGS
             }
             // If the write was not initial, the user will be refunded
             LogOpcode::StorageWrite => {
-                let intrinsic = STORAGE_WRITE_IO_PRICE
-                    + 2 * VM_CYCLE_COST_IN_ERGS
+                // NOTE: we do not add IO price here as it's a subject of refunds
+                VM_CYCLE_COST_IN_ERGS
                     + RAM_PERMUTATION_COST_IN_ERGS
                     + 2 * LOG_DEMUXER_COST_IN_ERGS
-                    + 2 * STORAGE_SORTER_COST_IN_ERGS;
+                    + 2 * STORAGE_SORTER_COST_IN_ERGS
 
-                std::cmp::max(intrinsic, MIN_STORAGE_WRITE_COST)
+                // let intrinsic = VM_CYCLE_COST_IN_ERGS
+                //     + RAM_PERMUTATION_COST_IN_ERGS
+                //     + 2 * LOG_DEMUXER_COST_IN_ERGS
+                //     + 2 * STORAGE_SORTER_COST_IN_ERGS;
+
+                // std::cmp::max(intrinsic, MIN_STORAGE_WRITE_COST)
             }
             // Note, that the `L1_MESSAGE_MIN_COST_IN_ERGS` is only needed for DDoS protection
             LogOpcode::ToL1Message => {
-                let intrinsic_cost = L1_MESSAGE_IO_PRICE
-                    + 2 * VM_CYCLE_COST_IN_ERGS
+                L1_MESSAGE_IO_PRICE
+                    + VM_CYCLE_COST_IN_ERGS
                     + RAM_PERMUTATION_COST_IN_ERGS
                     + 2 * LOG_DEMUXER_COST_IN_ERGS
-                    + 2 * EVENTS_OR_L1_MESSAGES_SORTER_COST_IN_ERGS;
-                std::cmp::max(intrinsic_cost, L1_MESSAGE_MIN_COST_IN_ERGS)
+                    + 2 * EVENTS_OR_L1_MESSAGES_SORTER_COST_IN_ERGS
+
+                // let intrinsic_cost = L1_MESSAGE_IO_PRICE
+                //     + VM_CYCLE_COST_IN_ERGS
+                //     + RAM_PERMUTATION_COST_IN_ERGS
+                //     + 2 * LOG_DEMUXER_COST_IN_ERGS
+                //     + 2 * EVENTS_OR_L1_MESSAGES_SORTER_COST_IN_ERGS;
+                // std::cmp::max(intrinsic_cost, L1_MESSAGE_MIN_COST_IN_ERGS)
             }
             LogOpcode::Event => {
                 EVENT_IO_PRICE
-                    + 2 * VM_CYCLE_COST_IN_ERGS
+                    + VM_CYCLE_COST_IN_ERGS
                     + RAM_PERMUTATION_COST_IN_ERGS
                     + 2 * LOG_DEMUXER_COST_IN_ERGS
                     + 2 * EVENTS_OR_L1_MESSAGES_SORTER_COST_IN_ERGS
@@ -124,6 +147,18 @@ impl OpcodeVariantProps for LogOpcode {
             }
             LogOpcode::Decommit => {
                 VM_CYCLE_COST_IN_ERGS + RAM_PERMUTATION_COST_IN_ERGS + LOG_DEMUXER_COST_IN_ERGS
+            }
+            LogOpcode::TransientStorageRead => {
+                VM_CYCLE_COST_IN_ERGS
+                    + RAM_PERMUTATION_COST_IN_ERGS
+                    + LOG_DEMUXER_COST_IN_ERGS
+                    + STORAGE_SORTER_COST_IN_ERGS
+            }
+            LogOpcode::TransientStorageWrite => {
+                VM_CYCLE_COST_IN_ERGS
+                    + RAM_PERMUTATION_COST_IN_ERGS
+                    + 2 * LOG_DEMUXER_COST_IN_ERGS
+                    + 2 * STORAGE_SORTER_COST_IN_ERGS
             }
         }
     }
@@ -207,6 +242,18 @@ impl OpcodeProps for LogOpcode {
                         num_non_exclusive_flags: 0,
                         num_used_immediates: 0,
                     },
+                    // Transient read
+                    OpcodeVariantData {
+                        variant_idx: LogOpcode::TransientStorageRead.variant_index(),
+                        num_non_exclusive_flags: 0,
+                        num_used_immediates: 0,
+                    },
+                    // Transient write
+                    OpcodeVariantData {
+                        variant_idx: LogOpcode::TransientStorageWrite.variant_index(),
+                        num_non_exclusive_flags: 0,
+                        num_used_immediates: 0,
+                    },
                 ]
             }
 
@@ -217,7 +264,7 @@ impl OpcodeProps for LogOpcode {
     fn max_variant_idx(&self, version: ISAVersion) -> usize {
         match version {
             ISAVersion(0) | ISAVersion(1) => LogOpcode::PrecompileCall.variant_index(),
-            ISAVersion(2) => LogOpcode::Decommit.variant_index(),
+            ISAVersion(2) => LogOpcode::TransientStorageWrite.variant_index(),
             _ => unreachable!(),
         }
     }
@@ -228,16 +275,20 @@ impl OpcodeProps for LogOpcode {
             | LogOpcode::Event
             | LogOpcode::ToL1Message
             | LogOpcode::PrecompileCall
-            | LogOpcode::Decommit => {
+            | LogOpcode::Decommit
+            | LogOpcode::TransientStorageWrite => {
                 vec![Operand::RegOnly, Operand::RegOnly]
             }
-            LogOpcode::StorageRead => vec![Operand::RegOnly],
+            LogOpcode::StorageRead | Self::TransientStorageRead => vec![Operand::RegOnly],
         }
     }
     fn output_operands(&self, _version: ISAVersion) -> Vec<Operand> {
         match self {
-            LogOpcode::StorageWrite | LogOpcode::Event | LogOpcode::ToL1Message => vec![],
-            LogOpcode::StorageRead => vec![Operand::RegOnly],
+            LogOpcode::StorageWrite
+            | LogOpcode::Event
+            | LogOpcode::ToL1Message
+            | LogOpcode::TransientStorageWrite => vec![],
+            LogOpcode::StorageRead | LogOpcode::TransientStorageRead => vec![Operand::RegOnly],
             LogOpcode::PrecompileCall => vec![Operand::RegOnly],
             LogOpcode::Decommit => vec![Operand::RegOnly],
         }
@@ -253,7 +304,10 @@ impl OpcodeProps for LogOpcode {
     }
     fn can_be_used_in_static_context(&self) -> bool {
         match self {
-            LogOpcode::StorageWrite | LogOpcode::Event | LogOpcode::ToL1Message => false,
+            LogOpcode::StorageWrite
+            | LogOpcode::Event
+            | LogOpcode::ToL1Message
+            | LogOpcode::TransientStorageWrite => false,
             _ => true,
         }
     }
