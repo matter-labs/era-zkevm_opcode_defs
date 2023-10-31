@@ -61,15 +61,33 @@ impl OpcodeVariantProps for LogOpcode {
         (*self as u8) as usize
     }
 
-    fn from_variant_index_for_version(index: usize, _version: &ISAVersion) -> Option<Self> {
-        match index {
-            i if i == LogOpcode::StorageRead.variant_index() => Some(LogOpcode::StorageRead),
-            i if i == LogOpcode::StorageWrite.variant_index() => Some(LogOpcode::StorageWrite),
-            i if i == LogOpcode::ToL1Message.variant_index() => Some(LogOpcode::ToL1Message),
-            i if i == LogOpcode::Event.variant_index() => Some(LogOpcode::Event),
-            i if i == LogOpcode::PrecompileCall.variant_index() => Some(LogOpcode::PrecompileCall),
-            _ => None,
+    fn from_variant_index_for_version(index: usize, version: &ISAVersion) -> Option<Self> {
+        match version {
+            ISAVersion(0) | ISAVersion(1) => {
+                match index {
+                    i if i == LogOpcode::StorageRead.variant_index() => Some(LogOpcode::StorageRead),
+                    i if i == LogOpcode::StorageWrite.variant_index() => Some(LogOpcode::StorageWrite),
+                    i if i == LogOpcode::ToL1Message.variant_index() => Some(LogOpcode::ToL1Message),
+                    i if i == LogOpcode::Event.variant_index() => Some(LogOpcode::Event),
+                    i if i == LogOpcode::PrecompileCall.variant_index() => Some(LogOpcode::PrecompileCall),
+                    _ => None,
+                }
+            },
+            ISAVersion(2) => {
+                match index {
+                    i if i == LogOpcode::StorageRead.variant_index() => Some(LogOpcode::StorageRead),
+                    i if i == LogOpcode::StorageWrite.variant_index() => Some(LogOpcode::StorageWrite),
+                    i if i == LogOpcode::ToL1Message.variant_index() => Some(LogOpcode::ToL1Message),
+                    i if i == LogOpcode::Event.variant_index() => Some(LogOpcode::Event),
+                    i if i == LogOpcode::PrecompileCall.variant_index() => Some(LogOpcode::PrecompileCall),
+                    i if i == LogOpcode::Decommit.variant_index() => Some(LogOpcode::Decommit),
+                    _ => None,
+                }
+            },
+            _ => unreachable!(),
         }
+
+        
     }
 
     fn ergs_price(&self) -> u32 {
@@ -201,15 +219,26 @@ impl OpcodeProps for LogOpcode {
             _ => unimplemented!(),
         }
     }
-    fn max_variant_idx(&self, _version: ISAVersion) -> usize {
-        LogOpcode::PrecompileCall.variant_index()
+
+    fn max_variant_idx(&self, version: ISAVersion) -> usize {
+        match version {
+            ISAVersion(0) | ISAVersion(1) => {
+                LogOpcode::PrecompileCall.variant_index()
+            },
+            ISAVersion(2) => {
+                LogOpcode::Decommit.variant_index()
+            },
+            _ => unreachable!(),
+        }
     }
+
     fn input_operands(&self, _version: ISAVersion) -> Vec<Operand> {
         match self {
             LogOpcode::StorageWrite
             | LogOpcode::Event
             | LogOpcode::ToL1Message
-            | LogOpcode::PrecompileCall => {
+            | LogOpcode::PrecompileCall
+            | LogOpcode::Decommit => {
                 vec![Operand::RegOnly, Operand::RegOnly]
             }
             LogOpcode::StorageRead => vec![Operand::RegOnly],
@@ -220,11 +249,12 @@ impl OpcodeProps for LogOpcode {
             LogOpcode::StorageWrite | LogOpcode::Event | LogOpcode::ToL1Message => vec![],
             LogOpcode::StorageRead => vec![Operand::RegOnly],
             LogOpcode::PrecompileCall => vec![Operand::RegOnly],
+            LogOpcode::Decommit => vec![Operand::RegOnly],
         }
     }
     fn requires_kernel_mode(&self) -> bool {
         match self {
-            LogOpcode::Event | LogOpcode::ToL1Message | LogOpcode::PrecompileCall => true,
+            LogOpcode::Event | LogOpcode::ToL1Message | LogOpcode::PrecompileCall | LogOpcode::Decommit => true,
             _ => false,
         }
     }
