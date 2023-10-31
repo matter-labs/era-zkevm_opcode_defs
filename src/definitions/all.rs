@@ -268,4 +268,46 @@ impl Opcode {
             Opcode::UMA(sub) => sub.output_operands(version),
         }
     }
+
+    pub fn src0_can_be_pointer(&self) -> bool {
+        match self {
+            Opcode::Invalid(sub) => sub.src0_can_be_pointer(),
+            Opcode::Nop(sub) => sub.src0_can_be_pointer(),
+            Opcode::Add(sub) => sub.src0_can_be_pointer(),
+            Opcode::Sub(sub) => sub.src0_can_be_pointer(),
+            Opcode::Mul(sub) => sub.src0_can_be_pointer(),
+            Opcode::Div(sub) => sub.src0_can_be_pointer(),
+            Opcode::Jump(sub) => sub.src0_can_be_pointer(),
+            Opcode::Context(sub) => sub.src0_can_be_pointer(),
+            Opcode::Shift(sub) => sub.src0_can_be_pointer(),
+            Opcode::Binop(sub) => sub.src0_can_be_pointer(),
+            Opcode::Ptr(sub) => sub.src0_can_be_pointer(),
+            Opcode::NearCall(sub) => sub.src0_can_be_pointer(),
+            Opcode::Log(sub) => sub.src0_can_be_pointer(),
+            Opcode::FarCall(sub) => sub.src0_can_be_pointer(),
+            Opcode::Ret(sub) => sub.src0_can_be_pointer(),
+            Opcode::UMA(sub) => sub.src0_can_be_pointer(),
+        }
+    }
+
+    pub fn src1_can_be_pointer(&self) -> bool {
+        match self {
+            Opcode::Invalid(sub) => sub.src1_can_be_pointer(),
+            Opcode::Nop(sub) => sub.src1_can_be_pointer(),
+            Opcode::Add(sub) => sub.src1_can_be_pointer(),
+            Opcode::Sub(sub) => sub.src1_can_be_pointer(),
+            Opcode::Mul(sub) => sub.src1_can_be_pointer(),
+            Opcode::Div(sub) => sub.src1_can_be_pointer(),
+            Opcode::Jump(sub) => sub.src1_can_be_pointer(),
+            Opcode::Context(sub) => sub.src1_can_be_pointer(),
+            Opcode::Shift(sub) => sub.src1_can_be_pointer(),
+            Opcode::Binop(sub) => sub.src1_can_be_pointer(),
+            Opcode::Ptr(sub) => sub.src1_can_be_pointer(),
+            Opcode::NearCall(sub) => sub.src1_can_be_pointer(),
+            Opcode::Log(sub) => sub.src1_can_be_pointer(),
+            Opcode::FarCall(sub) => sub.src1_can_be_pointer(),
+            Opcode::Ret(sub) => sub.src1_can_be_pointer(),
+            Opcode::UMA(sub) => sub.src1_can_be_pointer(),
+        }
+    }
 }

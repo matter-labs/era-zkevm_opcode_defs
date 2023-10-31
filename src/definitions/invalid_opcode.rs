@@ -62,4 +62,12 @@ impl OpcodeProps for InvalidOpcode {
     fn can_be_used_in_static_context(&self) -> bool {
         true
     }
+
+    fn src0_can_be_pointer(&self) -> bool {
+        false
+    }
+
+    fn src1_can_be_pointer(&self) -> bool {
+        false
+    }
 }
