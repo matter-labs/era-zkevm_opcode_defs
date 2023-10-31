@@ -47,6 +47,9 @@ impl OpcodeProps for AddOpcode {
             ISAVersion(1) => {
                 full_variants_product(0..=Self::max_variant_idx_for_version(version), 1, 2)
             }
+            ISAVersion(2) => {
+                full_variants_product(0..=Self::max_variant_idx_for_version(version), 1, 2)
+            }
             _ => unimplemented!(),
         }
     }

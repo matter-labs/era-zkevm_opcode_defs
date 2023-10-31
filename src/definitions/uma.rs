@@ -37,6 +37,7 @@ impl OpcodeVariantProps for UMAOpcode {
         match version {
             ISAVersion(0) => UMAOpcode::FatPointerRead.variant_index(),
             ISAVersion(1) => UMAOpcode::FatPointerRead.variant_index(),
+            ISAVersion(2) => UMAOpcode::FatPointerRead.variant_index(),
             _ => unimplemented!(),
         }
     }
@@ -91,6 +92,9 @@ impl OpcodeProps for UMAOpcode {
             ISAVersion(1) => {
                 full_variants_product(0..=Self::max_variant_idx_for_version(version), 1, 0)
             }
+            ISAVersion(2) => {
+                full_variants_product(0..=Self::max_variant_idx_for_version(version), 1, 0)
+            }
             _ => unimplemented!(),
         }
     }
@@ -98,6 +102,7 @@ impl OpcodeProps for UMAOpcode {
         match version {
             ISAVersion(0) => UMAOpcode::FatPointerRead.variant_index(),
             ISAVersion(1) => UMAOpcode::FatPointerRead.variant_index(),
+            ISAVersion(2) => UMAOpcode::FatPointerRead.variant_index(),
             _ => unimplemented!(),
         }
     }
@@ -109,7 +114,7 @@ impl OpcodeProps for UMAOpcode {
                 }
                 _ => vec![Operand::RegOnly],
             },
-            ISAVersion(1) => {
+            ISAVersion(1) | ISAVersion(2) => {
                 // we allow imm on the inputs for heap access for offsets
                 match self {
                     UMAOpcode::HeapWrite | UMAOpcode::AuxHeapWrite => vec![

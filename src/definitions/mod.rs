@@ -1007,8 +1007,10 @@ mod test {
     fn calculator() {
         let mut v0 = all_variants_in_version(ISAVersion(0));
         dbg!(v0.len());
-        let v1 = all_variants_in_version(ISAVersion(1));
+        let mut v1 = all_variants_in_version(ISAVersion(1));
         dbg!(v1.len());
+        let v2 = all_variants_in_version(ISAVersion(2));
+        dbg!(v2.len());
 
         // check that our ordering doesn't change for legacy tables
         let legacy_v0 = synthesize_opcode_decoding_tables_legacy(11, ISAVersion(0));
@@ -1018,7 +1020,7 @@ mod test {
         let num_non_trivial_v0 = compute_encoding_density(ISAVersion(0));
         assert_eq!(&legacy_v0[..], &new_v0[..]);
 
-        let difference = find_new_opcodes(&mut v0, &v1);
+        let _difference_v0_v1 = find_new_opcodes(&mut v0, &v1);
 
         let new_v1 = synthesize_opcode_decoding_tables(11, ISAVersion(1));
         let num_non_trivial_v1 = compute_encoding_density(ISAVersion(1));
@@ -1036,6 +1038,24 @@ mod test {
             assert!(new_v0[idx].is_explicit_panic());
         }
 
-        dbg!(&difference);
+        let difference_v1_v2 = find_new_opcodes(&mut v1, &v2);
+
+        let new_v2 = synthesize_opcode_decoding_tables(11, ISAVersion(2));
+        let num_non_trivial_v2 = compute_encoding_density(ISAVersion(2));
+
+        for (a, b) in new_v1[..num_non_trivial_v1]
+            .iter()
+            .zip(new_v2[..num_non_trivial_v1].iter())
+        {
+            assert!(semantically_equal(a, b));
+        }
+
+        assert!(num_non_trivial_v2 >= num_non_trivial_v1);
+
+        for idx in num_non_trivial_v1..num_non_trivial_v2 {
+            assert!(new_v1[idx].is_explicit_panic());
+        }
+
+        dbg!(&difference_v1_v2);
     }
 }

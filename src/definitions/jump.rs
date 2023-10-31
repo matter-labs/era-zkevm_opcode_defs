@@ -44,6 +44,9 @@ impl OpcodeProps for JumpOpcode {
             ISAVersion(1) => {
                 full_variants_product(0..=Self::max_variant_idx_for_version(version), 0, 1)
             }
+            ISAVersion(2) => {
+                full_variants_product(0..=Self::max_variant_idx_for_version(version), 0, 1)
+            }
             _ => unimplemented!(),
         }
     }

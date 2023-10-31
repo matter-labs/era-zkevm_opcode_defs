@@ -122,7 +122,7 @@ pub fn total_opcode_description_and_aux_bits_for_version(version: ISAVersion) ->
     total_description_bits_rounded_for_version(version) + TOTAL_AUX_BITS
 }
 
-pub const DEFAULT_ISA_VERSION: ISAVersion = ISAVersion(1);
+pub const DEFAULT_ISA_VERSION: ISAVersion = ISAVersion(2);
 
 lazy_static! {
     pub static ref OPCODES_TABLE: [OpcodeVariant; 1 << OPCODES_TABLE_WIDTH] = {
