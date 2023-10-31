@@ -46,6 +46,10 @@ impl VersionedHashGeneric<ContractCodeSha256> {
             },
         }
     }
+
+    pub fn can_call(&self) -> bool {
+        self.data.extra_marker == ContractCodeSha256::CODE_AT_REST_MARKER
+    }
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
@@ -96,6 +100,70 @@ impl VersionedHashDef for ContractCodeSha256 {
 
         Some(Self::StorageLayout {
             code_length_in_words,
+            extra_marker,
+            partial_hash,
+        })
+    }
+}
+
+impl VersionedHashGeneric<BlobSha256> {
+    pub fn from_digest_and_preimage_length(digest: [u8; 32], preimage_len: u16) -> Self {
+        let mut truncated_digest = [0u8; 28];
+        truncated_digest.copy_from_slice(&digest[4..]);
+
+        Self {
+            data: BlobSha256Storage {
+                preimage_length_in_bytes: preimage_len,
+                extra_marker: 0u8,
+                partial_hash: truncated_digest,
+            },
+        }
+    }
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub struct BlobSha256;
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub struct BlobSha256Storage {
+    pub preimage_length_in_bytes: u16,
+    pub extra_marker: u8,
+    pub partial_hash: [u8; 28],
+}
+
+impl VersionedHashDef for BlobSha256 {
+    const VERSION_BYTE: u8 = 0x02;
+    type StorageLayout = BlobSha256Storage;
+    fn serialize(storage: Self::StorageLayout) -> Option<[u8; 32]> {
+        let mut result = [0u8; 32];
+        result[0] = Self::VERSION_BYTE;
+        result[1] = storage.extra_marker;
+        result[2..4].copy_from_slice(&storage.preimage_length_in_bytes.to_be_bytes());
+        result[4..].copy_from_slice(&storage.partial_hash);
+
+        Some(result)
+    }
+    fn serialize_to_stored(storage: Self::StorageLayout) -> Option<[u8; 32]> {
+        let mut result = [0u8; 32];
+        result[0] = Self::VERSION_BYTE;
+        result[1] = 0;
+        result[2..4].copy_from_slice(&storage.preimage_length_in_bytes.to_be_bytes());
+        result[4..].copy_from_slice(&storage.partial_hash);
+
+        Some(result)
+    }
+    fn try_deserialize(input: [u8; 32]) -> Option<Self::StorageLayout> {
+        if input[0] != Self::VERSION_BYTE {
+            return None;
+        }
+
+        let extra_marker = input[1];
+
+        let preimage_length_in_bytes = u16::from_be_bytes([input[2], input[3]]);
+        let partial_hash: [u8; 28] = input[4..32].try_into().unwrap();
+
+        Some(Self::StorageLayout {
+            preimage_length_in_bytes,
             extra_marker,
             partial_hash,
         })
