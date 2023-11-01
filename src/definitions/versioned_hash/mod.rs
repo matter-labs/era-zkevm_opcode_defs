@@ -46,8 +46,12 @@ impl VersionedHashLen32 for ContractCodeSha256Format {
 pub struct BlobSha256Format;
 
 impl BlobSha256Format {
+    pub fn preimage_length_in_bytes(src: &[u8; 32]) -> u16 {
+        u16::from_be_bytes([src[2], src[3]])
+    }
+
     pub fn normalize_and_get_len_in_bytes32_words(src: &[u8; 32]) -> ([u8; 32], u16) {
-        let preimage_length_in_bytes = u16::from_be_bytes([src[2], src[3]]);
+        let preimage_length_in_bytes = Self::preimage_length_in_bytes(src);
 
         let (mut len_in_words, rem) =
             (preimage_length_in_bytes / 32, preimage_length_in_bytes % 32);
