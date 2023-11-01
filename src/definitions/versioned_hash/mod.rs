@@ -1,3 +1,85 @@
+// We assume that all preimages are [u8; 32] and we just want to peek into them and get
+// few main points
+pub trait VersionedHashLen32:
+    Send + Sync + Sized + Clone + Copy + PartialEq + Eq + std::hash::Hash
+{
+    const VERSION_BYTE: u8;
+    fn is_valid(src: &[u8; 32]) -> bool;
+    fn normalize_for_decommitment(src: &[u8; 32]) -> [u8; 32];
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub struct ContractCodeSha256Format;
+
+impl ContractCodeSha256Format {
+    pub const CODE_AT_REST_MARKER: u8 = 0;
+    pub const YET_CONSTRUCTED_MARKER: u8 = 1;
+
+    pub fn code_length_in_bytes32_words(src: &[u8; 32]) -> u16 {
+        u16::from_be_bytes([src[2], src[3]])
+    }
+
+    pub fn is_code_at_rest_if_valid(src: &[u8; 32]) -> bool {
+        src[1] == Self::CODE_AT_REST_MARKER
+    }
+
+    pub fn is_in_construction_if_valid(src: &[u8; 32]) -> bool {
+        src[1] == Self::YET_CONSTRUCTED_MARKER
+    }
+}
+
+impl VersionedHashLen32 for ContractCodeSha256Format {
+    const VERSION_BYTE: u8 = 0x01;
+    fn is_valid(src: &[u8; 32]) -> bool {
+        src[0] == Self::VERSION_BYTE
+            && (src[1] == Self::CODE_AT_REST_MARKER || src[1] == Self::YET_CONSTRUCTED_MARKER)
+    }
+    fn normalize_for_decommitment(src: &[u8; 32]) -> [u8; 32] {
+        let mut result = [0u8; 32];
+        result[4..].copy_from_slice(&src[4..]);
+
+        result
+    }
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub struct BlobSha256Format;
+
+impl BlobSha256Format {
+    pub fn normalize_and_get_len_in_bytes32_words(src: &[u8; 32]) -> ([u8; 32], u16) {
+        let preimage_length_in_bytes = u16::from_be_bytes([src[2], src[3]]);
+
+        let (mut len_in_words, rem) =
+            (preimage_length_in_bytes / 32, preimage_length_in_bytes % 32);
+        if rem != 0 {
+            len_in_words += 1;
+        }
+        if len_in_words & 1 != 1 {
+            len_in_words += 1;
+        }
+
+        (Self::normalize_for_decommitment(src), len_in_words)
+    }
+}
+
+impl BlobSha256Format {
+    pub const CODE_AT_REST_MARKER: u8 = 0;
+    pub const YET_CONSTRUCTED_MARKER: u8 = 1;
+}
+
+impl VersionedHashLen32 for BlobSha256Format {
+    const VERSION_BYTE: u8 = 0x02;
+    fn is_valid(src: &[u8; 32]) -> bool {
+        src[0] == Self::VERSION_BYTE && src[1] == 0
+    }
+    fn normalize_for_decommitment(src: &[u8; 32]) -> [u8; 32] {
+        let mut result = [0u8; 32];
+        result[4..].copy_from_slice(&src[4..]);
+
+        result
+    }
+}
+
 pub trait VersionedHashDef:
     Send + Sync + Sized + Clone + Copy + PartialEq + Eq + std::hash::Hash
 {
