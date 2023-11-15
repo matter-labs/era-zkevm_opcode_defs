@@ -4,7 +4,9 @@ use crate::{
         LOG_DEMUXER_COST_IN_ERGS, RAM_PERMUTATION_COST_IN_ERGS, STORAGE_SORTER_COST_IN_ERGS,
         VM_CYCLE_COST_IN_ERGS,
     },
-    system_params::MIN_STORAGE_WRITE_COST,
+    system_params::{
+        MIN_STORAGE_WRITE_COST, STORAGE_ACCESS_COLD_READ_COST, STORAGE_ACCESS_COLD_WRITE_COST,
+    },
 };
 
 use super::*;
@@ -99,19 +101,19 @@ impl OpcodeVariantProps for LogOpcode {
     fn ergs_price(&self) -> u32 {
         match self {
             LogOpcode::StorageRead => {
-                // NOTE: we do not add IO price here as it's a subject of refunds
                 VM_CYCLE_COST_IN_ERGS
                     + RAM_PERMUTATION_COST_IN_ERGS
                     + LOG_DEMUXER_COST_IN_ERGS
                     + STORAGE_SORTER_COST_IN_ERGS
+                    + STORAGE_ACCESS_COLD_READ_COST
             }
             // If the write was not initial, the user will be refunded
             LogOpcode::StorageWrite => {
-                // NOTE: we do not add IO price here as it's a subject of refunds
                 VM_CYCLE_COST_IN_ERGS
                     + RAM_PERMUTATION_COST_IN_ERGS
                     + 2 * LOG_DEMUXER_COST_IN_ERGS
                     + 2 * STORAGE_SORTER_COST_IN_ERGS
+                    + STORAGE_ACCESS_COLD_WRITE_COST
 
                 // let intrinsic = VM_CYCLE_COST_IN_ERGS
                 //     + RAM_PERMUTATION_COST_IN_ERGS
