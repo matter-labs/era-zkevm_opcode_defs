@@ -47,3 +47,29 @@ impl PrecompileCallABI {
         result
     }
 }
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub struct PrecompileAuxData {
+    pub extra_ergs_cost: u32,
+    pub extra_pubdata_cost: u32,
+}
+
+impl PrecompileAuxData {
+    pub const fn from_u256(raw_value: U256) -> Self {
+        let raw = raw_value.0;
+        let extra_ergs_cost = raw[0] as u32;
+        let extra_pubdata_cost = (raw[0] >> 32) as u32;
+
+        Self {
+            extra_ergs_cost,
+            extra_pubdata_cost,
+        }
+    }
+
+    pub const fn to_u256(self) -> U256 {
+        let mut result = U256::zero();
+        result.0[0] = (self.extra_ergs_cost as u64) | ((self.extra_pubdata_cost as u64) << 32);
+
+        result
+    }
+}
