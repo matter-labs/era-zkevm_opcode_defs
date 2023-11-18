@@ -57,7 +57,7 @@ impl OpcodeProps for JumpOpcode {
         vec![Operand::Full(ImmMemHandlerFlags::UseRegOnly)]
     }
     fn output_operands(&self, _version: ISAVersion) -> Vec<Operand> {
-        vec![]
+        vec![Operand::RegOnly]
     }
     fn requires_kernel_mode(&self) -> bool {
         false

@@ -371,7 +371,7 @@ pub fn synthesize_opcode_decoding_tables_legacy(
                         }
                     }
                 }
-                (&[Operand::Full(_)], &[]) => {
+                (&[Operand::Full(_)], &[]) | (&[Operand::Full(_)], &[Operand::RegOnly]) => {
                     // we need to encode all combinations of input and output being reg/stack/code/imm
                     // but we only have a case of inputs
                     for variant_data in all_variants_added_in_this_version.into_iter() {
@@ -566,7 +566,7 @@ fn all_variants_in_version(version: ISAVersion) -> Vec<OpcodeVariant> {
                         }
                     }
                 }
-                (&[Operand::Full(_)], &[]) => {
+                (&[Operand::Full(_)], &[]) | (&[Operand::Full(_)], &[Operand::RegOnly]) => {
                     // we need to encode all combinations of input and output being reg/stack/code/imm
                     // but we only have a case of inputs
                     let variant_idx = variant_data.variant_idx;
