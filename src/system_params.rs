@@ -126,4 +126,6 @@ lazy_static! {
         Address::from_low_u64_be(SHA256_ROUND_FUNCTION_PRECOMPILE_ADDRESS as u64);
     pub static ref ECRECOVER_INNER_FUNCTION_PRECOMPILE_FORMAL_ADDRESS: Address =
         Address::from_low_u64_be(ECRECOVER_INNER_FUNCTION_PRECOMPILE_ADDRESS as u64);
+    pub static ref SECP256R1_VERIFY_INNER_FUNCTION_PRECOMPILE_FORMAL_ADDRESS: Address =
+        Address::from_low_u64_be(SECP256R1_VERIFY_PRECOMPILE_ADDRESS as u64);
 }
