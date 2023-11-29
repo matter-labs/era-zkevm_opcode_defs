@@ -40,7 +40,7 @@ pub const STORAGE_AUX_BYTE: u8 = 0;
 pub const EVENT_AUX_BYTE: u8 = 1;
 pub const L1_MESSAGE_AUX_BYTE: u8 = 2;
 pub const PRECOMPILE_AUX_BYTE: u8 = 3;
-pub const TRANSIENT_STORAGE_AUX_BYTE: u8 = 0;
+pub const TRANSIENT_STORAGE_AUX_BYTE: u8 = 4;
 
 use lazy_static::lazy_static;
 
