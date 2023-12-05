@@ -55,9 +55,13 @@ impl FatPointer {
                 true,
             );
         }
-        // start + length doesn't overflow
-        let (_, of) = self.start.overflowing_add(self.length);
+        // start + length doesn't exceed heap bound of 2^30
+        let (end_non_inclusive, of) = self.start.overflowing_add(self.length);
         if of {
+            exceptions.set(FatPointerValidationException::DEREF_BEYOND_HEAP_RANGE, true);
+        }
+        let (_, limit_exceeded) = (((1 << 30) - 1) as u32).overflowing_sub(end_non_inclusive);
+        if limit_exceeded {
             exceptions.set(FatPointerValidationException::DEREF_BEYOND_HEAP_RANGE, true);
         }
 
