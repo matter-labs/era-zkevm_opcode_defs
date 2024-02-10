@@ -18,6 +18,8 @@ pub enum UMAOpcode {
     AuxHeapRead,
     AuxHeapWrite,
     FatPointerRead,
+    StaticMemoryRead,
+    StaticMemoryWrite,
 }
 
 pub const UMA_INCREMENT_FLAG_IDX: usize = 0;
@@ -30,6 +32,8 @@ impl OpcodeVariantProps for UMAOpcode {
             UMAOpcode::AuxHeapRead,
             UMAOpcode::AuxHeapWrite,
             UMAOpcode::FatPointerRead,
+            UMAOpcode::StaticMemoryRead,
+            UMAOpcode::StaticMemoryWrite,
         ]
     }
 
@@ -37,13 +41,14 @@ impl OpcodeVariantProps for UMAOpcode {
         match version {
             ISAVersion(0) => UMAOpcode::FatPointerRead.variant_index(),
             ISAVersion(1) => UMAOpcode::FatPointerRead.variant_index(),
-            ISAVersion(2) => UMAOpcode::FatPointerRead.variant_index(),
+            ISAVersion(2) => UMAOpcode::StaticMemoryWrite.variant_index(),
             _ => unimplemented!(),
         }
     }
 
     fn minimal_version(&self) -> ISAVersion {
         match self {
+            UMAOpcode::StaticMemoryRead | UMAOpcode::StaticMemoryWrite => ALL_ISA_VERSIONS[2],
             _ => ALL_ISA_VERSIONS[0],
         }
     }
@@ -52,26 +57,43 @@ impl OpcodeVariantProps for UMAOpcode {
         (*self as u8) as usize
     }
 
-    fn from_variant_index_for_version(index: usize, _version: &ISAVersion) -> Option<Self> {
+    fn from_variant_index_for_version(index: usize, version: &ISAVersion) -> Option<Self> {
         match index {
             i if i == UMAOpcode::HeapRead.variant_index() => Some(UMAOpcode::HeapRead),
             i if i == UMAOpcode::HeapWrite.variant_index() => Some(UMAOpcode::HeapWrite),
             i if i == UMAOpcode::AuxHeapRead.variant_index() => Some(UMAOpcode::AuxHeapRead),
             i if i == UMAOpcode::AuxHeapWrite.variant_index() => Some(UMAOpcode::AuxHeapWrite),
             i if i == UMAOpcode::FatPointerRead.variant_index() => Some(UMAOpcode::FatPointerRead),
+            i if i == UMAOpcode::StaticMemoryRead.variant_index() => {
+                if version >= &ALL_ISA_VERSIONS[2] {
+                    Some(UMAOpcode::StaticMemoryRead)
+                } else {
+                    None
+                }
+            }
+            i if i == UMAOpcode::StaticMemoryWrite.variant_index() => {
+                if version >= &ALL_ISA_VERSIONS[2] {
+                    Some(UMAOpcode::StaticMemoryWrite)
+                } else {
+                    None
+                }
+            }
             _ => None,
         }
     }
 
     fn ergs_price(&self) -> u32 {
         match self {
-            UMAOpcode::AuxHeapWrite | UMAOpcode::HeapWrite => {
+            UMAOpcode::AuxHeapWrite | UMAOpcode::HeapWrite | UMAOpcode::StaticMemoryWrite => {
                 // 5 RAM permutations, because: 1 to read opcode + 2 reads + 2 writes.
                 // 2 reads and 2 writes are needed because unaligned access is implemented with
                 // aligned queries
                 2 * VM_CYCLE_COST_IN_ERGS + 5 * RAM_PERMUTATION_COST_IN_ERGS
             }
-            UMAOpcode::HeapRead | UMAOpcode::AuxHeapRead | UMAOpcode::FatPointerRead => {
+            UMAOpcode::HeapRead
+            | UMAOpcode::AuxHeapRead
+            | UMAOpcode::FatPointerRead
+            | UMAOpcode::StaticMemoryRead => {
                 // 5 RAM permutations, because: 1 to read opcode + 2 reads.
                 // 2 reads are needed because unaligned access is implemented with aligned queries
                 VM_CYCLE_COST_IN_ERGS + 3 * RAM_PERMUTATION_COST_IN_ERGS
@@ -102,7 +124,7 @@ impl OpcodeProps for UMAOpcode {
         match version {
             ISAVersion(0) => UMAOpcode::FatPointerRead.variant_index(),
             ISAVersion(1) => UMAOpcode::FatPointerRead.variant_index(),
-            ISAVersion(2) => UMAOpcode::FatPointerRead.variant_index(),
+            ISAVersion(2) => UMAOpcode::StaticMemoryWrite.variant_index(),
             _ => unimplemented!(),
         }
     }
@@ -117,11 +139,13 @@ impl OpcodeProps for UMAOpcode {
             ISAVersion(1) | ISAVersion(2) => {
                 // we allow imm on the inputs for heap access for offsets
                 match self {
-                    UMAOpcode::HeapWrite | UMAOpcode::AuxHeapWrite => vec![
+                    UMAOpcode::HeapWrite
+                    | UMAOpcode::AuxHeapWrite
+                    | UMAOpcode::StaticMemoryWrite => vec![
                         Operand::RegOrImm(RegOrImmFlags::UseRegOnly),
                         Operand::RegOnly,
                     ],
-                    UMAOpcode::HeapRead | UMAOpcode::AuxHeapRead => {
+                    UMAOpcode::HeapRead | UMAOpcode::AuxHeapRead | UMAOpcode::StaticMemoryRead => {
                         vec![Operand::RegOrImm(RegOrImmFlags::UseRegOnly)]
                     }
                     UMAOpcode::FatPointerRead => {
@@ -134,12 +158,17 @@ impl OpcodeProps for UMAOpcode {
     }
     fn output_operands(&self, _version: ISAVersion) -> Vec<Operand> {
         match self {
-            UMAOpcode::HeapWrite | UMAOpcode::AuxHeapWrite => vec![Operand::RegOnly],
+            UMAOpcode::HeapWrite | UMAOpcode::AuxHeapWrite | UMAOpcode::StaticMemoryWrite => {
+                vec![Operand::RegOnly]
+            }
             _ => vec![Operand::RegOnly, Operand::RegOnly],
         }
     }
     fn requires_kernel_mode(&self) -> bool {
-        false
+        match self {
+            UMAOpcode::StaticMemoryRead | UMAOpcode::StaticMemoryWrite => true,
+            _ => false,
+        }
     }
     fn can_be_used_in_static_context(&self) -> bool {
         true
