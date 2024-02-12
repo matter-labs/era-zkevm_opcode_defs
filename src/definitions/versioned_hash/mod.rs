@@ -4,9 +4,32 @@ pub trait VersionedHashLen32:
     Send + Sync + Sized + Clone + Copy + PartialEq + Eq + std::hash::Hash
 {
     const VERSION_BYTE: u8;
-    fn is_valid(src: &[u8; 32]) -> bool;
-    fn normalize_for_decommitment(src: &[u8; 32]) -> [u8; 32];
+    fn is_valid(src: &[u8; VERSIONED_HASH_SIZE]) -> bool;
+    fn normalize_for_decommitment(
+        src: &[u8; VERSIONED_HASH_SIZE],
+    ) -> (VersionedHashHeader, VersionedHashNormalizedPreimage) {
+        let mut header = VersionedHashHeader::default();
+        header.0.copy_from_slice(&src[0..4]);
+        let mut normalized_body = VersionedHashNormalizedPreimage::default();
+        normalized_body.0.copy_from_slice(&src[4..]);
+
+        (header, normalized_body)
+    }
 }
+
+pub const VERSIONED_HASH_SIZE: usize = 32;
+pub const VERSIONED_HASH_HEADER_SIZE: usize = 4;
+pub const VERSIONED_HASH_NORMALIZED_PREIMAGE_SIZE: usize = 28;
+
+#[derive(
+    Clone, Copy, Debug, PartialEq, Eq, Default, Hash, serde::Serialize, serde::Deserialize,
+)]
+pub struct VersionedHashHeader(pub [u8; VERSIONED_HASH_HEADER_SIZE]);
+
+#[derive(
+    Clone, Copy, Debug, PartialEq, Eq, Default, Hash, serde::Serialize, serde::Deserialize,
+)]
+pub struct VersionedHashNormalizedPreimage(pub [u8; VERSIONED_HASH_NORMALIZED_PREIMAGE_SIZE]);
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct ContractCodeSha256Format;
@@ -15,30 +38,25 @@ impl ContractCodeSha256Format {
     pub const CODE_AT_REST_MARKER: u8 = 0;
     pub const YET_CONSTRUCTED_MARKER: u8 = 1;
 
-    pub fn code_length_in_bytes32_words(src: &[u8; 32]) -> u16 {
+    pub fn code_length_in_bytes32_words(src: &[u8; VERSIONED_HASH_SIZE]) -> u16 {
         u16::from_be_bytes([src[2], src[3]])
     }
 
-    pub fn is_code_at_rest_if_valid(src: &[u8; 32]) -> bool {
+    pub fn is_code_at_rest_if_valid(src: &[u8; VERSIONED_HASH_SIZE]) -> bool {
         src[1] == Self::CODE_AT_REST_MARKER
     }
 
-    pub fn is_in_construction_if_valid(src: &[u8; 32]) -> bool {
+    pub fn is_in_construction_if_valid(src: &[u8; VERSIONED_HASH_SIZE]) -> bool {
         src[1] == Self::YET_CONSTRUCTED_MARKER
     }
 }
 
 impl VersionedHashLen32 for ContractCodeSha256Format {
     const VERSION_BYTE: u8 = 0x01;
-    fn is_valid(src: &[u8; 32]) -> bool {
+
+    fn is_valid(src: &[u8; VERSIONED_HASH_SIZE]) -> bool {
         src[0] == Self::VERSION_BYTE
             && (src[1] == Self::CODE_AT_REST_MARKER || src[1] == Self::YET_CONSTRUCTED_MARKER)
-    }
-    fn normalize_for_decommitment(src: &[u8; 32]) -> [u8; 32] {
-        let mut result = [0u8; 32];
-        result[4..].copy_from_slice(&src[4..]);
-
-        result
     }
 }
 
@@ -46,11 +64,14 @@ impl VersionedHashLen32 for ContractCodeSha256Format {
 pub struct BlobSha256Format;
 
 impl BlobSha256Format {
+    pub const CODE_AT_REST_MARKER: u8 = 0;
+    pub const YET_CONSTRUCTED_MARKER: u8 = 1;
+
     pub fn preimage_length_in_bytes(src: &[u8; 32]) -> u16 {
         u16::from_be_bytes([src[2], src[3]])
     }
 
-    pub fn normalize_and_get_len_in_bytes32_words(src: &[u8; 32]) -> ([u8; 32], u16) {
+    pub fn get_len_in_bytes32_words(src: &[u8; 32]) -> u16 {
         let preimage_length_in_bytes = Self::preimage_length_in_bytes(src);
 
         let (mut len_in_words, rem) =
@@ -62,25 +83,41 @@ impl BlobSha256Format {
             len_in_words += 1;
         }
 
-        (Self::normalize_for_decommitment(src), len_in_words)
+        len_in_words
     }
-}
 
-impl BlobSha256Format {
-    pub const CODE_AT_REST_MARKER: u8 = 0;
-    pub const YET_CONSTRUCTED_MARKER: u8 = 1;
+    pub fn normalize_and_get_len_in_bytes32_words(
+        src: &[u8; 32],
+    ) -> (VersionedHashNormalizedPreimage, u16) {
+        let preimage_length_in_bytes = Self::preimage_length_in_bytes(src);
+
+        let (mut len_in_words, rem) =
+            (preimage_length_in_bytes / 32, preimage_length_in_bytes % 32);
+        if rem != 0 {
+            len_in_words += 1;
+        }
+        if len_in_words & 1 != 1 {
+            len_in_words += 1;
+        }
+
+        (Self::normalize_for_decommitment(src).1, len_in_words)
+    }
+
+    pub fn is_code_at_rest_if_valid(src: &[u8; VERSIONED_HASH_SIZE]) -> bool {
+        src[1] == Self::CODE_AT_REST_MARKER
+    }
+
+    pub fn is_in_construction_if_valid(src: &[u8; VERSIONED_HASH_SIZE]) -> bool {
+        src[1] == Self::YET_CONSTRUCTED_MARKER
+    }
 }
 
 impl VersionedHashLen32 for BlobSha256Format {
     const VERSION_BYTE: u8 = 0x02;
-    fn is_valid(src: &[u8; 32]) -> bool {
-        src[0] == Self::VERSION_BYTE && src[1] == 0
-    }
-    fn normalize_for_decommitment(src: &[u8; 32]) -> [u8; 32] {
-        let mut result = [0u8; 32];
-        result[4..].copy_from_slice(&src[4..]);
 
-        result
+    fn is_valid(src: &[u8; 32]) -> bool {
+        src[0] == Self::VERSION_BYTE
+            && (src[1] == Self::CODE_AT_REST_MARKER || src[1] == Self::YET_CONSTRUCTED_MARKER)
     }
 }
 

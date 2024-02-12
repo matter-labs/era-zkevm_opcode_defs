@@ -75,7 +75,7 @@ const WIDTH_MULTIPLE: usize = 16;
 
 pub const INITIAL_SP_ON_FAR_CALL: u64 = 0;
 pub const UNMAPPED_PAGE: u32 = 0;
-
+pub const STATIC_MEMORY_PAGE: u32 = 1;
 pub const BOOTLOADER_BASE_PAGE: u32 = 8;
 pub const BOOTLOADER_CODE_PAGE: u32 = BOOTLOADER_BASE_PAGE;
 pub const BOOTLOADER_CALLDATA_PAGE: u32 = BOOTLOADER_BASE_PAGE - 1; // some convention
