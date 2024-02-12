@@ -229,12 +229,12 @@ lazy_static! {
         result.try_into().unwrap()
     };
 
-    pub static ref STIPENDS_AND_EXTRA_COSTS_TABLE: Vec<(u32, u32)> = {
-        let mut default_table = vec![(0u32, 0u32); NUM_SYSTEM_CONTRACTS];
+    pub static ref STIPENDS_AND_EXTRA_COSTS_TABLE: Box<[(u32, u32); NUM_SYSTEM_CONTRACTS]> = {
+        let mut default_table = [(0u32, 0u32); NUM_SYSTEM_CONTRACTS];
         use crate::system_params::MSG_VALUE_SIMULATOR_ADDITIVE_COST;
         default_table[ADDRESS_MSG_VALUE as usize] = (0u32, MSG_VALUE_SIMULATOR_ADDITIVE_COST);
 
-        default_table
+        Box::new(default_table)
     };
 }
 
