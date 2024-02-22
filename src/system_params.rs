@@ -72,7 +72,7 @@ pub const ADDRESS_KECCAK256: u16 = 0x8010;
 
 pub const BOOTLOADER_MAX_MEMORY: u32 = u32::MAX;
 pub const NEW_FRAME_MEMORY_STIPEND: u32 = 1u32 << 12; // 4 KB for new frames is "free"
-pub const NEW_KERNEL_FRAME_MEMORY_STIPEND: u32 = 1u32 << 12; // 4 KB for new frames is "free"
+pub const NEW_KERNEL_FRAME_MEMORY_STIPEND: u32 = 1u32 << 20; // 1 MB for kernel frames, where we can be sure about behavior
 
 pub const MSG_VALUE_SIMULATOR_PUBDATA_BYTES_TO_PREPAY: u32 = 32 + 32 + 32 + 32;
 
