@@ -74,7 +74,7 @@ pub const BOOTLOADER_MAX_MEMORY: u32 = u32::MAX;
 pub const NEW_FRAME_MEMORY_STIPEND: u32 = 1u32 << 12; // 4 KB for new frames is "free"
 pub const NEW_KERNEL_FRAME_MEMORY_STIPEND: u32 = 1u32 << 20; // 1 MB for kernel frames, where we can be sure about behavior
 
-pub const INTERNAL_ERGS_TO_VISIBLE_ERGS_CONVERSION_CONSTANT: u32 = 256;
+pub const INTERNAL_ERGS_TO_VISIBLE_ERGS_CONVERSION_CONSTANT: u32 = 1;
 
 /// 128k * 4 / 32 -- the maximal realistic smart contract size. NOTE this constant should be updated once a new
 /// packing method is introduced or more than 128k of data is allowed to be sent on L1.
