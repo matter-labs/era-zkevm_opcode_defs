@@ -1,4 +1,7 @@
-use crate::{circuit_prices::STORAGE_WRITE_HASHER_MIN_COST_IN_ERGS, CALL_LIKE_ERGS_COST, ERGS_PER_CODE_WORD_DECOMMITTMENT};
+use crate::{
+    circuit_prices::STORAGE_WRITE_HASHER_MIN_COST_IN_ERGS, CALL_LIKE_ERGS_COST,
+    ERGS_PER_CODE_WORD_DECOMMITTMENT,
+};
 use ethereum_types::Address;
 
 pub const MAX_TX_ERGS_LIMIT: u32 = 80_000_000;
@@ -76,14 +79,15 @@ pub const NEW_KERNEL_FRAME_MEMORY_STIPEND: u32 = 1u32 << 20; // 1 MB for kernel 
 
 pub const INTERNAL_ERGS_TO_VISIBLE_ERGS_CONVERSION_CONSTANT: u32 = 1;
 
-/// `MsgValueSimulator` will automatically support decommitments to bytecodes of size up to 100k. 
+/// `MsgValueSimulator` will automatically support decommitments to bytecodes of size up to 100k.
 /// It will mean that if 0 gas was provided for the call, only `callee`s of size up to 100k could be called.
 /// We supporting a larger value would lead to larger overhead for callers that do not provide 0 gas.
 pub const MAX_AUTOMATICALLY_SUPPORTED_MSG_VALUE_BYTECODE: u32 = 100_000;
 const _: () = assert!(MAX_AUTOMATICALLY_SUPPORTED_MSG_VALUE_BYTECODE % 32 == 0);
-pub const DECOMMITMENT_MSG_VALUE_SIMULATOR_OVERHEAD: u32 = ERGS_PER_CODE_WORD_DECOMMITTMENT * MAX_AUTOMATICALLY_SUPPORTED_MSG_VALUE_BYTECODE / 32;
+pub const DECOMMITMENT_MSG_VALUE_SIMULATOR_OVERHEAD: u32 =
+    ERGS_PER_CODE_WORD_DECOMMITTMENT * MAX_AUTOMATICALLY_SUPPORTED_MSG_VALUE_BYTECODE / 32;
 
-/// The amount of gas that is always retrived from the `caller` and passed to the `MsgValueSimulator` whenever it is called. 
+/// The amount of gas that is always retrived from the `caller` and passed to the `MsgValueSimulator` whenever it is called.
 /// This value should be enough to cover the execution of the `MsgValueSimulator` itself and the decommitment of the callee's bytecode + pass at least 2300 gas.
 /// This invariant is not easy to enforce within this crate, so `MsgValueSimulator` is expected to be well tested in the `era-contracts` repo.
 pub const MSG_VALUE_SIMULATOR_ADDITIVE_COST: u32 =
