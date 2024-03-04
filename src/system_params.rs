@@ -1,4 +1,7 @@
-use crate::{circuit_prices::STORAGE_WRITE_HASHER_MIN_COST_IN_ERGS, CALL_LIKE_ERGS_COST};
+use crate::{
+    circuit_prices::STORAGE_WRITE_HASHER_MIN_COST_IN_ERGS, CALL_LIKE_ERGS_COST,
+    ERGS_PER_CODE_WORD_DECOMMITTMENT,
+};
 use ethereum_types::Address;
 
 pub const MAX_TX_ERGS_LIMIT: u32 = 80_000_000;
@@ -76,15 +79,19 @@ pub const NEW_KERNEL_FRAME_MEMORY_STIPEND: u32 = 1u32 << 20; // 1 MB for kernel 
 
 pub const INTERNAL_ERGS_TO_VISIBLE_ERGS_CONVERSION_CONSTANT: u32 = 1;
 
-/// 128k * 4 / 32 -- the maximal realistic smart contract size. NOTE this constant should be updated once a new
-/// packing method is introduced or more than 128k of data is allowed to be sent on L1.
-pub const DECOMMITMENT_MSG_VALUE_SIMULATOR_OVERHEAD: u32 = 64000;
+/// `MsgValueSimulator` will automatically support decommitments to bytecodes of size up to 100k.
+/// It will mean that if 0 gas was provided for the call, only `callee`s of size up to 100k could be called.
+/// We supporting a larger value would lead to larger overhead for callers that do not provide 0 gas.
+pub const MAX_AUTOMATICALLY_SUPPORTED_MSG_VALUE_BYTECODE: u32 = 100_000;
+const _: () = assert!(MAX_AUTOMATICALLY_SUPPORTED_MSG_VALUE_BYTECODE % 32 == 0);
+pub const DECOMMITMENT_MSG_VALUE_SIMULATOR_OVERHEAD: u32 =
+    ERGS_PER_CODE_WORD_DECOMMITTMENT * MAX_AUTOMATICALLY_SUPPORTED_MSG_VALUE_BYTECODE / 32;
+
+/// The amount of gas that is always retrived from the `caller` and passed to the `MsgValueSimulator` whenever it is called.
+/// This value should be enough to cover the execution of the `MsgValueSimulator` itself and the decommitment of the callee's bytecode + pass at least 2300 gas.
+/// This invariant is not easy to enforce within this crate, so `MsgValueSimulator` is expected to be well tested in the `era-contracts` repo.
 pub const MSG_VALUE_SIMULATOR_ADDITIVE_COST: u32 =
     11500 + DECOMMITMENT_MSG_VALUE_SIMULATOR_OVERHEAD;
-
-/// The minimum amount of ergs that should be spent by the user while using the MsgValueSimulator (even if
-/// the user spends less funds, only the parent frame will receivet the refund)
-pub const MSG_VALUE_SIMULATOR_MIN_USED_ERGS: u32 = 8000 + DECOMMITMENT_MSG_VALUE_SIMULATOR_OVERHEAD;
 
 // std::cmp::max is not yet stabilized as const fn yet
 const fn max(a: u32, b: u32) -> u32 {
@@ -96,12 +103,8 @@ const fn max(a: u32, b: u32) -> u32 {
 }
 
 /// The minimum price in ergs that a storage write should cost in order to protect Ethereum's `.transfer / .send` function against reentrancy.
-/// The first part of the expression is the stipend given by the MsgValueSimulator to the callee frame. The second part of the expression
-/// is the 2300 constant used for 0-value `transfer/send` calls + 1 to make sure that within the call it is not possible to store anything.
-pub const MIN_STORAGE_WRITE_PRICE_FOR_REENTRANCY_PROTECTION: u32 = max(
-    MSG_VALUE_SIMULATOR_ADDITIVE_COST - MSG_VALUE_SIMULATOR_MIN_USED_ERGS + 1,
-    2300 + 1,
-);
+/// It is a 2300 constant used for 0-value `transfer/send` calls + 1 to make sure that within the call it is not possible to store anything.
+pub const MIN_STORAGE_WRITE_PRICE_FOR_REENTRANCY_PROTECTION: u32 = 2300 + 1;
 
 /// The minimal price in ergs the storage could cost to protect against reentrancy + take into account the usage of the single instance circuits.
 pub const MIN_STORAGE_WRITE_COST: u32 = max(
