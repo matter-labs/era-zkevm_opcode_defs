@@ -1,4 +1,4 @@
-use crate::{circuit_prices::STORAGE_WRITE_HASHER_MIN_COST_IN_ERGS, LogOpcode, OpcodeVariantProps, CALL_LIKE_ERGS_COST, ERGS_PER_CODE_WORD_DECOMMITTMENT};
+use crate::{circuit_prices::STORAGE_WRITE_HASHER_MIN_COST_IN_ERGS, CALL_LIKE_ERGS_COST, ERGS_PER_CODE_WORD_DECOMMITTMENT};
 use ethereum_types::Address;
 
 pub const MAX_TX_ERGS_LIMIT: u32 = 80_000_000;
