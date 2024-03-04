@@ -93,10 +93,6 @@ pub const DECOMMITMENT_MSG_VALUE_SIMULATOR_OVERHEAD: u32 =
 pub const MSG_VALUE_SIMULATOR_ADDITIVE_COST: u32 =
     11500 + DECOMMITMENT_MSG_VALUE_SIMULATOR_OVERHEAD;
 
-/// The minimum amount of ergs that should be spent by the user while using the MsgValueSimulator (even if
-/// the user spends less funds, only the parent frame will receivet the refund)
-pub const MSG_VALUE_SIMULATOR_MIN_USED_ERGS: u32 = 8000 + DECOMMITMENT_MSG_VALUE_SIMULATOR_OVERHEAD;
-
 // std::cmp::max is not yet stabilized as const fn yet
 const fn max(a: u32, b: u32) -> u32 {
     if a > b {
@@ -107,12 +103,8 @@ const fn max(a: u32, b: u32) -> u32 {
 }
 
 /// The minimum price in ergs that a storage write should cost in order to protect Ethereum's `.transfer / .send` function against reentrancy.
-/// The first part of the expression is the stipend given by the MsgValueSimulator to the callee frame. The second part of the expression
-/// is the 2300 constant used for 0-value `transfer/send` calls + 1 to make sure that within the call it is not possible to store anything.
-pub const MIN_STORAGE_WRITE_PRICE_FOR_REENTRANCY_PROTECTION: u32 = max(
-    MSG_VALUE_SIMULATOR_ADDITIVE_COST - MSG_VALUE_SIMULATOR_MIN_USED_ERGS + 1,
-    2300 + 1,
-);
+/// It is a 2300 constant used for 0-value `transfer/send` calls + 1 to make sure that within the call it is not possible to store anything.
+pub const MIN_STORAGE_WRITE_PRICE_FOR_REENTRANCY_PROTECTION: u32 = 2300 + 1;
 
 /// The minimal price in ergs the storage could cost to protect against reentrancy + take into account the usage of the single instance circuits.
 pub const MIN_STORAGE_WRITE_COST: u32 = max(
