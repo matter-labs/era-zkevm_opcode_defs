@@ -91,7 +91,7 @@ pub const DECOMMITMENT_MSG_VALUE_SIMULATOR_OVERHEAD: u32 =
 /// This value should be enough to cover the execution of the `MsgValueSimulator` itself and the decommitment of the callee's bytecode + pass at least 2300 gas.
 /// This invariant is not easy to enforce within this crate, so `MsgValueSimulator` is expected to be well tested in the `era-contracts` repo.
 pub const MSG_VALUE_SIMULATOR_ADDITIVE_COST: u32 =
-    11500 + DECOMMITMENT_MSG_VALUE_SIMULATOR_OVERHEAD;
+    13500 + DECOMMITMENT_MSG_VALUE_SIMULATOR_OVERHEAD;
 
 // std::cmp::max is not yet stabilized as const fn yet
 const fn max(a: u32, b: u32) -> u32 {
@@ -113,7 +113,11 @@ pub const MIN_STORAGE_WRITE_COST: u32 = max(
 );
 
 pub const STORAGE_ACCESS_COLD_READ_COST: u32 = 2000;
-pub const STORAGE_ACCESS_COLD_WRITE_COST: u32 = max(MIN_STORAGE_WRITE_COST, 4000);
+pub const STORAGE_ACCESS_COLD_WRITE_COST: u32 = max(MIN_STORAGE_WRITE_COST, 5500);
+
+/// We currently ensure that that cost of each byte of pubdata computation-wise should be equal to at least 80 ergs.
+/// This is needed to ensure that a call with bounded amount of gas could not published too much pubdata.
+const _: () = assert!(STORAGE_ACCESS_COLD_WRITE_COST / (MAX_PUBDATA_COST_PER_QUERY as u32) >= 80);
 
 lazy_static! {
     pub static ref BOOTLOADER_FORMAL_ADDRESS: Address =
