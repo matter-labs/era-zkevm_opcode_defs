@@ -74,8 +74,11 @@ pub const ADDRESS_EVENT_WRITER: u16 = 0x800D;
 pub const ADDRESS_KECCAK256: u16 = 0x8010;
 
 pub const BOOTLOADER_MAX_MEMORY: u32 = u32::MAX;
-pub const NEW_FRAME_MEMORY_STIPEND: u32 = 1u32 << 12; // 4 KB for new frames is "free"
-pub const NEW_KERNEL_FRAME_MEMORY_STIPEND: u32 = 1u32 << 20; // 1 MB for kernel frames, where we can be sure about behavior
+// 4 KB for new frames is "free"
+pub const NEW_FRAME_MEMORY_STIPEND: u32 = 1u32 << 12;
+// 2 MB for kernel frames, where we can be sure about the behavior.
+// Note, that this number should high enough to allow any bytecode for `decommit` opcode.
+pub const NEW_KERNEL_FRAME_MEMORY_STIPEND: u32 = 1u32 << 21;
 
 pub const INTERNAL_ERGS_TO_VISIBLE_ERGS_CONVERSION_CONSTANT: u32 = 1;
 
