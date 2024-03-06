@@ -94,7 +94,7 @@ pub const DECOMMITMENT_MSG_VALUE_SIMULATOR_OVERHEAD: u32 =
 /// This value should be enough to cover the execution of the `MsgValueSimulator` itself and the decommitment of the callee's bytecode + pass at least 2300 gas.
 /// This invariant is not easy to enforce within this crate, so `MsgValueSimulator` is expected to be well tested in the `era-contracts` repo.
 pub const MSG_VALUE_SIMULATOR_ADDITIVE_COST: u32 =
-    13500 + DECOMMITMENT_MSG_VALUE_SIMULATOR_OVERHEAD;
+    14500 + DECOMMITMENT_MSG_VALUE_SIMULATOR_OVERHEAD;
 
 // std::cmp::max is not yet stabilized as const fn yet
 const fn max(a: u32, b: u32) -> u32 {
