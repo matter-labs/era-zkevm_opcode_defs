@@ -124,6 +124,9 @@ pub const MIN_STORAGE_WRITE_COST: u32 = max(
 pub const STORAGE_ACCESS_COLD_READ_COST: u32 = 2000;
 pub const STORAGE_ACCESS_COLD_WRITE_COST: u32 = max(MIN_STORAGE_WRITE_COST, 5500);
 
+pub const STORAGE_ACCESSS_WARM_READ_COST: u32 = 30;
+pub const STORAGE_ACCESS_WARM_WRITE_COST: u32 = 60;
+
 /// We currently ensure that that cost of each byte of pubdata computation-wise should be equal to at least 80 ergs.
 /// This is needed to ensure that a call with bounded amount of gas could not published too much pubdata.
 const _: () = assert!(STORAGE_ACCESS_COLD_WRITE_COST / (MAX_PUBDATA_COST_PER_QUERY as u32) >= 80);
