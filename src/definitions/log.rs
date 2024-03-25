@@ -8,7 +8,7 @@ use crate::{
 
 use self::{
     circuit_prices::CODE_DECOMMITMENT_SORTER_COST_IN_ERGS,
-    system_params::{STORAGE_ACCESSS_WARM_READ_COST, STORAGE_ACCESS_WARM_WRITE_COST},
+    system_params::{STORAGE_ACCESS_WARM_READ_COST, STORAGE_ACCESS_WARM_WRITE_COST},
 };
 
 use super::*;
@@ -147,7 +147,7 @@ impl OpcodeVariantProps for LogOpcode {
                     + STORAGE_SORTER_COST_IN_ERGS
                     // The pricing for transient operations is the same as for the warm storage ones, due
                     // to the need of handling reverts.
-                    + STORAGE_ACCESSS_WARM_READ_COST
+                    + STORAGE_ACCESS_WARM_READ_COST
             }
             LogOpcode::TransientStorageWrite => {
                 VM_CYCLE_COST_IN_ERGS
