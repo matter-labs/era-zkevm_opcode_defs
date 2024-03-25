@@ -133,7 +133,9 @@ impl OpcodeVariantProps for LogOpcode {
                 VM_CYCLE_COST_IN_ERGS + RAM_PERMUTATION_COST_IN_ERGS + LOG_DEMUXER_COST_IN_ERGS
             }
             LogOpcode::Decommit => {
-                VM_CYCLE_COST_IN_ERGS + RAM_PERMUTATION_COST_IN_ERGS + CODE_DECOMMITMENT_SORTER_COST_IN_ERGS
+                VM_CYCLE_COST_IN_ERGS
+                    + RAM_PERMUTATION_COST_IN_ERGS
+                    + CODE_DECOMMITMENT_SORTER_COST_IN_ERGS
             }
             LogOpcode::TransientStorageRead => {
                 VM_CYCLE_COST_IN_ERGS
