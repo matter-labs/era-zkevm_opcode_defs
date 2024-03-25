@@ -6,6 +6,8 @@ use crate::{
     system_params::{STORAGE_ACCESS_COLD_READ_COST, STORAGE_ACCESS_COLD_WRITE_COST},
 };
 
+use self::circuit_prices::CODE_DECOMMITMENT_SORTER_COST_IN_ERGS;
+
 use super::*;
 
 pub const FIRST_MESSAGE_FLAG_IDX: usize = 0;
@@ -111,13 +113,6 @@ impl OpcodeVariantProps for LogOpcode {
                     + 2 * LOG_DEMUXER_COST_IN_ERGS
                     + 2 * STORAGE_SORTER_COST_IN_ERGS
                     + STORAGE_ACCESS_COLD_WRITE_COST
-
-                // let intrinsic = VM_CYCLE_COST_IN_ERGS
-                //     + RAM_PERMUTATION_COST_IN_ERGS
-                //     + 2 * LOG_DEMUXER_COST_IN_ERGS
-                //     + 2 * STORAGE_SORTER_COST_IN_ERGS;
-
-                // std::cmp::max(intrinsic, MIN_STORAGE_WRITE_COST)
             }
             // Note, that the `L1_MESSAGE_MIN_COST_IN_ERGS` is only needed for DDoS protection
             LogOpcode::ToL1Message => {
@@ -126,13 +121,6 @@ impl OpcodeVariantProps for LogOpcode {
                     + RAM_PERMUTATION_COST_IN_ERGS
                     + 2 * LOG_DEMUXER_COST_IN_ERGS
                     + 2 * EVENTS_OR_L1_MESSAGES_SORTER_COST_IN_ERGS
-
-                // let intrinsic_cost = L1_MESSAGE_IO_PRICE
-                //     + VM_CYCLE_COST_IN_ERGS
-                //     + RAM_PERMUTATION_COST_IN_ERGS
-                //     + 2 * LOG_DEMUXER_COST_IN_ERGS
-                //     + 2 * EVENTS_OR_L1_MESSAGES_SORTER_COST_IN_ERGS;
-                // std::cmp::max(intrinsic_cost, L1_MESSAGE_MIN_COST_IN_ERGS)
             }
             LogOpcode::Event => {
                 EVENT_IO_PRICE
@@ -145,7 +133,7 @@ impl OpcodeVariantProps for LogOpcode {
                 VM_CYCLE_COST_IN_ERGS + RAM_PERMUTATION_COST_IN_ERGS + LOG_DEMUXER_COST_IN_ERGS
             }
             LogOpcode::Decommit => {
-                VM_CYCLE_COST_IN_ERGS + RAM_PERMUTATION_COST_IN_ERGS + LOG_DEMUXER_COST_IN_ERGS
+                VM_CYCLE_COST_IN_ERGS + RAM_PERMUTATION_COST_IN_ERGS + CODE_DECOMMITMENT_SORTER_COST_IN_ERGS
             }
             LogOpcode::TransientStorageRead => {
                 VM_CYCLE_COST_IN_ERGS
