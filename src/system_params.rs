@@ -78,6 +78,7 @@ pub const ADDRESS_SYSTEM_CONTEXT: u16 = 0x800B;
 pub const ADDRESS_BOOTLOADER_UTILITIES: u16 = 0x800C;
 pub const ADDRESS_EVENT_WRITER: u16 = 0x800D;
 pub const ADDRESS_KECCAK256: u16 = 0x8010;
+pub const ADDRESS_CODE_ORACLE: u16 = 0x8011;
 
 pub const BOOTLOADER_MAX_MEMORY: u32 = u32::MAX;
 // 4 KB for new frames is "free"
