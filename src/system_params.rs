@@ -24,9 +24,14 @@ pub const INITIAL_FRAME_FORMAL_EH_LOCATION: u16 = u16::MAX;
 
 const SYSTEM_CONTRACTS_OFFSET_ADDRESS: u16 = 1 << 15;
 
+// The following constants are the addresses of the precompiles
 pub const KECCAK256_ROUND_FUNCTION_PRECOMPILE_ADDRESS: u16 = SYSTEM_CONTRACTS_OFFSET_ADDRESS + 0x10;
 pub const SHA256_ROUND_FUNCTION_PRECOMPILE_ADDRESS: u16 = 0x02; // as in Ethereum
 pub const ECRECOVER_INNER_FUNCTION_PRECOMPILE_ADDRESS: u16 = 0x01; // as in Ethereum
+pub const MODEXP_INNER_FUNCTION_PRECOMPILE_ADDRESS: u16 = 0x05; // as in Ethereum
+pub const ECADD_INNER_FUNCTION_PRECOMPILE_ADDRESS: u16 = 0x06; // as in Ethereum
+pub const ECMUL_INNER_FUNCTION_PRECOMPILE_ADDRESS: u16 = 0x07; // as in Ethereum
+pub const ECPAIRING_INNER_FUNCTION_PRECOMPILE_ADDRESS: u16 = 0x08; // as in Ethereum
 pub const SECP256R1_VERIFY_PRECOMPILE_ADDRESS: u16 = 0x100; // As in RIP7212: https://github.com/ethereum/RIPs/blob/master/RIPS/rip-7212.md
 
 pub const MAX_PUBDATA_COST_PER_QUERY: i32 = 65;
@@ -153,4 +158,12 @@ lazy_static! {
         Address::from_low_u64_be(SECP256R1_VERIFY_PRECOMPILE_ADDRESS as u64);
     pub static ref FRI_PROOF_VERIFY_ORACLE_PRECOMPILE_FORMAL_ADDRESS: Address =
         Address::from_low_u64_be(ADDRESS_FRI_PROOF_VERIFY_ORACLE as u64);
+    pub static ref ECADD_PRECOMPILE_FORMAL_ADDRESS: Address =
+        Address::from_low_u64_be(ECADD_INNER_FUNCTION_PRECOMPILE_ADDRESS as u64);
+    pub static ref ECMUL_PRECOMPILE_FORMAL_ADDRESS: Address =
+        Address::from_low_u64_be(ECMUL_INNER_FUNCTION_PRECOMPILE_ADDRESS as u64);
+    pub static ref ECPAIRING_PRECOMPILE_FORMAL_ADDRESS: Address =
+        Address::from_low_u64_be(ECPAIRING_INNER_FUNCTION_PRECOMPILE_ADDRESS as u64);
+    pub static ref MODEXP_PRECOMPILE_FORMAL_ADDRESS: Address =
+        Address::from_low_u64_be(MODEXP_INNER_FUNCTION_PRECOMPILE_ADDRESS as u64);
 }

@@ -22,3 +22,5 @@ blake2 = "0.10.*"
 k256 = { version = "0.13.*", features = ["arithmetic", "ecdsa"] }
 p256 = { version = "0.13.*", features = ["arithmetic", "ecdsa"] }
 serde = { version = "1", features = ["derive"] }
+
+pairing_ce = { git = "https://github.com/matter-labs/pairing.git" }
