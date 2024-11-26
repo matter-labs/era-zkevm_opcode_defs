@@ -42,11 +42,6 @@ use crate::decoding::VariantMonotonicNumber;
 
 pub const OPCODES_TABLE_WIDTH: usize = 11;
 pub const CONDITIONAL_BITS_SHIFT: usize = 13;
-pub const MEMORY_GROWTH_ERGS_PER_BYTE: u32 = 1;
-
-const _: () = if MEMORY_GROWTH_ERGS_PER_BYTE != 1 {
-    panic!()
-};
 
 pub const VARIANT_AND_CONDITION_ENCODING_BITS: usize = 16;
 

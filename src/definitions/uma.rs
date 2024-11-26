@@ -3,7 +3,7 @@ use crate::circuit_prices::{RAM_PERMUTATION_COST_IN_ERGS, VM_CYCLE_COST_IN_ERGS}
 use super::*;
 use ethereum_types::U256;
 
-pub const MAX_OFFSET_TO_DEREF_LOW_U32: u32 = ((1u64 << 32) - 33) as u32;
+pub const MAX_OFFSET_TO_DEREF_LOW_U32: u32 = ((1u64 << 30) - 1) as u32;
 
 // Maximum offset which can be dereferenced. Formally we could dereference
 // exactly 1<<32 - 32, but it would trigger extra checks and overflows, and in practice
